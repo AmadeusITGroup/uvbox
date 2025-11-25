@@ -36,6 +36,9 @@ jobs:
         with:
           fetch-depth: 0  # Required for tag computation and goreleaser changelog
 
+      - name: Setup mise
+        uses: jdx/mise-action@v3
+  
       # Python is needed for GoReleaser post-build hooks that create Python wheels
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,12 +48,6 @@ jobs:
       # Dependencies used for wheel builds
       - name: Install Python build tools
         run: pip install hatchling build
-
-      # Go compiler
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: boxer/go.mod
 
       # Used to bump version
       - name: Install svu
