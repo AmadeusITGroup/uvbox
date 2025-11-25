@@ -1,4 +1,5 @@
 [tools]
+"github:caarlos0/svu" = "latest"
 go = "latest"
 golangci-lint = "latest"
 golangci-lint-langserver = "latest"
