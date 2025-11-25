@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
 
 	"github.com/adrg/xdg"
