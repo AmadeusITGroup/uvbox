@@ -56,6 +56,12 @@ func runConfiguration() (packageName, packageVersion, packageScript, packageCons
 
 func runPackageAndExit(packageName string, packageScript string, box *Box) {
 	logger.Trace("Running", logger.Args("package", packageName, "script", packageScript))
+	// Ignore SIGINT signal to prevent exiting when the package is running, only the package should handle it
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt)
+	defer signal.Stop(sigCh)
+
+	// Run the package
 	returnCode, err := box.Run(packageName, packageScript)
 	if err != nil {
 		logger.Fatal("Failed to run script", logger.Args("package", packageName, "script", packageScript, "error", err))
