@@ -49,10 +49,6 @@ jobs:
       - name: Install Python build tools
         run: pip install hatchling build
 
-      # Used to bump version
-      - name: Install svu
-        run: go install github.com/caarlos0/svu/v3@latest
-
       # Compute tag, create it, and push to remote
       - id: compute-tag
         name: Compute and push tag
