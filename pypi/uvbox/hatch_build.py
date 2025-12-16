@@ -104,7 +104,7 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
 
         # Determine console script name based on platform
         console_script_name = binary_name
-        if binary_path.suffix == ".exe":
+        if binary_path.suffix == ".exe" and not binary_name.endswith(".exe"):
             console_script_name = f"{binary_name}.exe"
 
         # Map the binary to a console script

@@ -5,6 +5,7 @@ golangci-lint = "latest"
 golangci-lint-langserver = "latest"
 goreleaser = "latest"
 nfpm = "latest"
+"pipx:hatchling" = "latest"
 
 [tasks.format]
 description = "Format all Go code"
