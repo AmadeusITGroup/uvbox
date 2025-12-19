@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/charmbracelet/fang"
@@ -360,6 +361,14 @@ func goBuild(repository, buildName, platform, arch string) error {
 func checkBuiltExecutableExists(repository, buildName string) (string, error) {
 	executable := filepath.Join(repository, buildName)
 	if _, err := os.Stat(executable); os.IsNotExist(err) {
+		// On Windows host, Go may add .exe suffix even when cross-compiling for other platforms.
+		// Check for the .exe variant if the original file wasn't found.
+		if runtime.GOOS == "windows" && !strings.HasSuffix(buildName, ".exe") {
+			executableWithExe := executable + ".exe"
+			if _, exeErr := os.Stat(executableWithExe); exeErr == nil {
+				return executableWithExe, nil
+			}
+		}
 		return "", fmt.Errorf("could not find built executable at %s: %w", executable, err)
 	} else if err != nil {
 		return "", fmt.Errorf("could not read build executable file '%s' metadata: %w", executable, err)
@@ -438,13 +447,13 @@ func deleteFileIfExists(filePath string) error {
 	return nil
 }
 
-func createFileArchiveWithFormatFromName(executable, archiveDestination string) error {
+func createFileArchiveWithFormatFromName(executable, archiveDestination, entryName string) error {
 	if strings.HasSuffix(archiveDestination, ".zip") {
-		if err := zipFile(executable, archiveDestination); err != nil {
+		if err := zipFile(executable, archiveDestination, entryName); err != nil {
 			return fmt.Errorf("failed to create executable zip archive: %w", err)
 		}
 	} else if strings.HasSuffix(archiveDestination, ".tar.gz") {
-		if err := gzipFile(executable, archiveDestination); err != nil {
+		if err := gzipFile(executable, archiveDestination, entryName); err != nil {
 			return fmt.Errorf("failed to create executable gzip archive: %w", err)
 		}
 	} else {
@@ -485,8 +494,13 @@ func archiveExecutable(builtExecutablePath, executableName, platform, arch strin
 		return "", fmt.Errorf("failed to try to delete if exists %s: %w", archiveDestination, err)
 	}
 
+	// Determine the correct entry name for the archive (e.g., "app" for Linux, "app.exe" for Windows)
+	// This ensures the file inside the archive has the correct name for the target platform,
+	// even if the actual file on disk has a different name (e.g., when cross-compiling from Windows)
+	entryName := determineBuildName(executableName, platform)
+
 	// Use the correct method to archive the executable based on the archive extension
-	if err := createFileArchiveWithFormatFromName(builtExecutablePath, archiveDestination); err != nil {
+	if err := createFileArchiveWithFormatFromName(builtExecutablePath, archiveDestination, entryName); err != nil {
 		return "", fmt.Errorf("failed to create executable archive: %w", err)
 	}
 
@@ -675,14 +689,14 @@ func extractBoxRepository(destination string) (string, error) {
 	return boxRepositoryPath, nil
 }
 
-func gzipFile(source, destination string) error {
+func gzipFile(source, destination, entryName string) error {
 	parentFolder := filepath.Dir(destination)
 	if err := ensureDirectory(parentFolder); err != nil {
 		return fmt.Errorf("failed to create directory %s: %w", parentFolder, err)
 	}
 
 	files, err := archives.FilesFromDisk(context.Background(), nil, map[string]string{
-		source: filepath.Base(source),
+		source: entryName,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to prepare file %s for archiving: %w", source, err)
@@ -707,7 +721,7 @@ func gzipFile(source, destination string) error {
 	return nil
 }
 
-func zipFile(source, destination string) error {
+func zipFile(source, destination, entryName string) error {
 	parentFolder := filepath.Dir(destination)
 	if err := ensureDirectory(parentFolder); err != nil {
 		return fmt.Errorf("failed to create directory %s: %w", parentFolder, err)
@@ -742,7 +756,7 @@ func zipFile(source, destination string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file info header: %w", err)
 	}
-	header.Name = filepath.Base(source)
+	header.Name = entryName
 	header.Method = zip.Deflate
 
 	writer, err := archive.CreateHeader(header)
