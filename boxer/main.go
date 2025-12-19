@@ -329,19 +329,22 @@ func goBuild(repository, buildName, platform, arch string) error {
 	var outbuf, errbuf strings.Builder
 
 	// Compilation flag
-	ldflags := "-ldflags=-s -w"
+	ldflags := "-s -w"
 	if len(WheelsToEmbed) > 0 {
 		ldflags += " -X main.INSTALL_WHEELS=yes"
 	}
 
 	// Command
-	cmd := exec.Command("go", "build", "-o", buildName, ldflags)
+	cmd := exec.Command("go", "build", "-o", buildName)
 	cmd.Dir = repository
 	cmd.Env = append(
 		os.Environ(),
 		fmt.Sprintf("GOOS=%s", platform),
 		fmt.Sprintf("GOARCH=%s", arch),
 		"CGO_ENABLED=0",
+		// Use $GOFLAGS instead of CLI args because Windows fails to escape ldflags correctly when uvbox is ran through uv/uvx (?!)
+		// See https://github.com/AmadeusITGroup/uvbox/issues/7
+		fmt.Sprintf("GOFLAGS=-ldflags=%s", ldflags),
 	)
 	cmd.Stdout = &outbuf
 	cmd.Stderr = &errbuf
