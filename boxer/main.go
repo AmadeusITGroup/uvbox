@@ -3,10 +3,8 @@ package main
 //go:generate go run -tags "!rar" generate.go
 
 import (
-	"archive/tar"
 	"archive/zip"
 	"bytes"
-	"compress/gzip"
 	"context"
 	_ "embed"
 	"fmt"
@@ -772,81 +770,91 @@ func zipFile(source, destination, entryName string) error {
 	return nil
 }
 
+// extractGzipFolder extracts a tar.gz archive to a destination folder.
+// It uses mholt/archives which auto-detects the archive format from the content.
 func extractGzipFolder(gzipFile []byte, destination string) error {
-	// Ensures destination is a directory
-	if err := ensureDirectory(destination); err != nil {
-		return fmt.Errorf("failed to ensure destination directory: %w", err)
-	}
+	ctx := context.Background()
+	reader := bytes.NewReader(gzipFile)
 
-	// Open gzip reader
-	gzipReader, err := gzip.NewReader(bytes.NewReader(gzipFile))
+	// Auto-detect archive format (tar.gz, etc.) by peeking at the stream header
+	format, stream, err := archives.Identify(ctx, "", reader)
 	if err != nil {
-		return fmt.Errorf("failed to create gzip reader: %w", err)
+		return fmt.Errorf("failed to identify archive format: %w", err)
 	}
-	defer gzipReader.Close()
 
-	tarReader := tar.NewReader(gzipReader)
+	// Ensure the detected format supports extraction
+	extractor, ok := format.(archives.Extractor)
+	if !ok {
+		return fmt.Errorf("format does not support extraction")
+	}
 
-	for {
-		header, err := tarReader.Next()
-		// Break loop if no more entries
-		if err == io.EOF {
-			break
+	// Normalize destination to absolute path for secure path validation
+	destination, err = filepath.Abs(destination)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute destination path: %w", err)
+	}
+
+	// Create the destination directory if it doesn't exist
+	if err := os.MkdirAll(destination, 0755); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
+	// Handler is called for each file in the archive.
+	// The library uses this callback pattern to give us control over how files are written,
+	// allowing us to implement security checks and handle different file types appropriately.
+	handler := func(ctx context.Context, f archives.FileInfo) error {
+		targetPath := filepath.Join(destination, f.NameInArchive)
+
+		// Security: Prevent path traversal attacks (e.g., "../../../etc/passwd")
+		// by ensuring the resolved path stays within our destination directory
+		cleanPath := filepath.Clean(targetPath)
+		if !strings.HasPrefix(cleanPath, filepath.Clean(destination)+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid file path (path traversal attempt): %s", f.NameInArchive)
 		}
 
-		// Break if err while reading entry
+		// Handle directories: create them and continue to next entry
+		if f.IsDir() {
+			return os.MkdirAll(targetPath, f.Mode())
+		}
+
+		// Ensure parent directories exist for this file
+		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+			return fmt.Errorf("failed to create parent directory for %s: %w", targetPath, err)
+		}
+
+		// Handle symbolic links
+		if f.LinkTarget != "" {
+			return os.Symlink(f.LinkTarget, targetPath)
+		}
+
+		// Handle regular files: open from archive, create on disk, copy contents
+		rc, err := f.Open()
 		if err != nil {
-			return fmt.Errorf("failed to reader tar header: %w", err)
+			return fmt.Errorf("failed to open file in archive: %w", err)
 		}
+		defer rc.Close()
 
-		target := filepath.Join(destination, header.Name)
-
-		// Clean target path and check if it's still relative to avoid path traversal exploits
-		target = filepath.Clean(target)
-		_, err = filepath.Rel(destination, target)
+		outFile, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
-			return fmt.Errorf("failed to get relative path: %w", err)
+			return fmt.Errorf("failed to create file %s: %w", targetPath, err)
+		}
+		defer outFile.Close()
+
+		if _, err := io.Copy(outFile, rc); err != nil {
+			return fmt.Errorf("failed to write file contents to %s: %w", targetPath, err)
 		}
 
-		targetDirectory := filepath.Dir(target)
-		if err := ensureDirectory(targetDirectory); err != nil {
-			return fmt.Errorf("failed to ensure directory %s: %w", targetDirectory, err)
+		// Preserve original modification time from the archive
+		if err := os.Chtimes(targetPath, f.ModTime(), f.ModTime()); err != nil {
+			return fmt.Errorf("failed to set modification time for %s: %w", targetPath, err)
 		}
 
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := ensureDirectory(target); err != nil {
-				return fmt.Errorf("failed to ensure directory %s: %w", target, err)
-			}
-		case tar.TypeReg:
-			// Create file
-			outputFile, err := os.Create(target)
-			if err != nil {
-				return fmt.Errorf("failed to create file %s: %w", target, err)
-			}
-			defer outputFile.Close()
+		return nil
+	}
 
-			// Write content
-			if _, err = io.Copy(outputFile, tarReader); err != nil {
-				return fmt.Errorf("failed to write file contents to %s: %w", target, err)
-			}
-
-			// Set permissions
-			if err := os.Chmod(target, header.FileInfo().Mode()); err != nil {
-				return fmt.Errorf("failed to chmod %s: %w", target, err)
-			}
-
-			// Set access and modification times
-			if err := os.Chtimes(target, header.AccessTime, header.ModTime); err != nil {
-				return fmt.Errorf("failed to chtimes %s: %w", target, err)
-			}
-		case tar.TypeSymlink:
-			if err := os.Symlink(header.Linkname, target); err != nil {
-				return fmt.Errorf("failed to create symlink %s: %w", header.Linkname, err)
-			}
-		default:
-			return fmt.Errorf("unknown entry type inside archive: %b", header.Typeflag)
-		}
+	// Walk through all entries in the archive and process each one via the handler
+	if err := extractor.Extract(ctx, stream, handler); err != nil {
+		return fmt.Errorf("failed to extract archive: %w", err)
 	}
 
 	return nil

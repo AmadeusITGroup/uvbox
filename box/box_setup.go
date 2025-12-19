@@ -1,10 +1,8 @@
 package main
 
 import (
-	"archive/tar"
-	"archive/zip"
 	"bytes"
-	"compress/gzip"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mholt/archives"
 	"github.com/theckman/yacspin"
 )
 
@@ -283,10 +282,7 @@ func (b *Box) installDownloadedUv() error {
 	if err != nil {
 		return fmt.Errorf("failed to download uv: %w", err)
 	}
-	if runtime.GOOS == "windows" {
-		return extractZipFolder(uvArchive, uvFolder)
-	}
-	return extractGzipFolder(uvArchive, uvFolder)
+	return extractArchive(uvArchive, uvFolder)
 }
 
 // symlinkUvExecutable creates a symlink to the uv executable at the root of the uv folder
@@ -349,162 +345,93 @@ func symlinkExecutableAtRoot(executableName string, destination string) error {
 	return nil
 }
 
-func extractZipFolder(source []byte, destination string) error {
-	zipBytesReader := bytes.NewReader(source)
-	// 1. Open the zip file
-	reader, err := zip.NewReader(zipBytesReader, int64(len(source)))
+// extractArchive extracts an archive (zip or tar.gz) to a destination folder.
+// It uses mholt/archives which auto-detects the archive format from the content.
+func extractArchive(source []byte, destination string) error {
+	ctx := context.Background()
+	reader := bytes.NewReader(source)
+
+	// Auto-detect archive format (zip, tar.gz, etc.) by peeking at the stream header
+	format, stream, err := archives.Identify(ctx, "", reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to identify archive format: %w", err)
 	}
 
-	// 2. Get the absolute destination path
+	// Ensure the detected format supports extraction
+	extractor, ok := format.(archives.Extractor)
+	if !ok {
+		return fmt.Errorf("format does not support extraction")
+	}
+
+	// Normalize destination to absolute path for secure path validation
 	destination, err = filepath.Abs(destination)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get absolute destination path: %w", err)
 	}
 
-	// 3. Iterate over zip files inside the archive and unzip each of them
-	for _, f := range reader.File {
-		err := unzipFile(f, destination)
+	// Create the destination directory if it doesn't exist
+	if err := os.MkdirAll(destination, 0755); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
+	// Handler is called for each file in the archive.
+	// The library uses this callback pattern to give us control over how files are written,
+	// allowing us to implement security checks and handle different file types appropriately.
+	handler := func(ctx context.Context, f archives.FileInfo) error {
+		targetPath := filepath.Join(destination, f.NameInArchive)
+
+		// Security: Prevent path traversal attacks (e.g., "../../../etc/passwd")
+		// by ensuring the resolved path stays within our destination directory
+		cleanPath := filepath.Clean(targetPath)
+		if !strings.HasPrefix(cleanPath, filepath.Clean(destination)+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid file path (path traversal attempt): %s", f.NameInArchive)
+		}
+
+		// Handle directories: create them and continue to next entry
+		if f.IsDir() {
+			return os.MkdirAll(targetPath, f.Mode())
+		}
+
+		// Ensure parent directories exist for this file
+		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+			return fmt.Errorf("failed to create parent directory for %s: %w", targetPath, err)
+		}
+
+		// Handle symbolic links
+		if f.LinkTarget != "" {
+			return os.Symlink(f.LinkTarget, targetPath)
+		}
+
+		// Handle regular files: open from archive, create on disk, copy contents
+		rc, err := f.Open()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to open file in archive: %w", err)
 		}
-	}
+		defer rc.Close()
 
-	return nil
-}
-
-func unzipFile(f *zip.File, destination string) error {
-	// 4. Check if file paths are not vulnerable to Zip Slip
-	filePath := filepath.Join(destination, f.Name)
-	if !strings.HasPrefix(filePath, filepath.Clean(destination)+string(os.PathSeparator)) {
-		return fmt.Errorf("invalid file path: %s", filePath)
-	}
-
-	// 5. Create directory tree
-	if f.FileInfo().IsDir() {
-		if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
-			return err
+		outFile, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return fmt.Errorf("failed to create file %s: %w", targetPath, err)
 		}
+		defer outFile.Close()
+
+		if _, err := io.Copy(outFile, rc); err != nil {
+			return fmt.Errorf("failed to write file contents to %s: %w", targetPath, err)
+		}
+
+		// Preserve original modification time from the archive
+		if err := os.Chtimes(targetPath, f.ModTime(), f.ModTime()); err != nil {
+			return fmt.Errorf("failed to set modification time for %s: %w", targetPath, err)
+		}
+
 		return nil
 	}
 
-	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return err
+	// Walk through all entries in the archive and process each one via the handler
+	if err := extractor.Extract(ctx, stream, handler); err != nil {
+		return fmt.Errorf("failed to extract archive: %w", err)
 	}
 
-	// 6. Create a destination file for unzipped content
-	destinationFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-	if err != nil {
-		return err
-	}
-	defer destinationFile.Close()
-
-	// 7. Unzip the content of a file and copy it to the destination file
-	zippedFile, err := f.Open()
-	if err != nil {
-		return err
-	}
-	defer zippedFile.Close()
-
-	if _, err := io.Copy(destinationFile, zippedFile); err != nil {
-		return err
-	}
-	return nil
-}
-
-// extractGzipFolder extracts a gzip archive to a destination folder
-func extractGzipFolder(gzipFile []byte, destination string) error {
-	// Ensures destination is a directory
-	if err := ensureDirectory(destination); err != nil {
-		return fmt.Errorf("error while ensuring if directory %s is ready to use: %w", destination, err)
-	}
-
-	// Open gzip reader
-	gzipReader, err := gzip.NewReader(bytes.NewReader(gzipFile))
-	if err != nil {
-		return fmt.Errorf("error while creating gzip reader: %w", err)
-	}
-	defer gzipReader.Close()
-
-	tarReader := tar.NewReader(gzipReader)
-
-	for {
-		header, err := tarReader.Next()
-		// Break loop if no more entries
-		if err == io.EOF {
-			break
-		}
-
-		// Break if err while reading entry
-		if err != nil {
-			return fmt.Errorf("error while trying to get next tar header: %w", err)
-		}
-
-		target := filepath.Join(destination, header.Name)
-
-		// Clean target path and check if it's still relative to avoid path traversal exploits
-		target = filepath.Clean(target)
-		_, err = filepath.Rel(destination, target)
-		if err != nil {
-			return fmt.Errorf("failed to get relative path: %w", err)
-		}
-
-		targetDirectory := filepath.Dir(target)
-		if err := ensureDirectory(targetDirectory); err != nil {
-			return fmt.Errorf("error while ensuring directory %s is ready to use: %w", targetDirectory, err)
-		}
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := ensureDirectory(target); err != nil {
-				return fmt.Errorf("error while ensuring directory %s is ready to use: %w", target, err)
-			}
-		case tar.TypeReg:
-			// Create file
-			outputFile, err := os.Create(target)
-			if err != nil {
-				return fmt.Errorf("failed to create file %s: %w", target, err)
-			}
-			defer outputFile.Close()
-
-			// Write content
-			if _, err = io.Copy(outputFile, tarReader); err != nil {
-				return fmt.Errorf("failed to write file contents to %s: %w", target, err)
-			}
-
-			// Set permissions
-			if err := os.Chmod(target, header.FileInfo().Mode()); err != nil {
-				return fmt.Errorf("failed to chmod %s: %w", target, err)
-			}
-
-			// Set access and modification times
-			if err := os.Chtimes(target, header.AccessTime, header.ModTime); err != nil {
-				return fmt.Errorf("failed to chtimes %s: %w", target, err)
-			}
-		case tar.TypeSymlink:
-			if err := os.Symlink(header.Linkname, target); err != nil {
-				return fmt.Errorf("failed to create symlink %s: %w", header.Linkname, err)
-			}
-		default:
-			return fmt.Errorf("unknown entry type inside archive: %b", header.Typeflag)
-		}
-	}
-
-	return nil
-}
-
-// ensureDirectory ensures the destination is a directory and/or creates it if it does not exist
-func ensureDirectory(destination string) error {
-	// Check destination is not an existing file
-	destinationInfo, err := os.Stat(destination)
-	if err == nil && !destinationInfo.IsDir() {
-		return err
-	}
-
-	if err := os.MkdirAll(destination, 0755); err != nil {
-		return err
-	}
 	return nil
 }
 
