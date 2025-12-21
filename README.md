@@ -54,7 +54,7 @@
 | macOS from Linux/Windows | ✅ Out of the box | ❌ Forbidden by Apple license | ❌ Forbidden by Apple license |
 | Updates | ✅ Built-in | ✅ Built-in | ❌ Manual |
 | Fallbacks | ✅ Version fallback support | ❌ Not supported | ❌ Not supported |
-| Distribution | Downloads at first run | Downloads at first run | Bundles everything (offline-ready) |
+| Distribution | ⚠️ Downloads at first run | ⚠️ Downloads at first run | ✅ Bundles everything (offline-ready) |
 
 **🎯 Choosing the right tool:**
 
@@ -253,10 +253,10 @@ All files are stored in XDG-compliant directories (`$XDG_DATA_HOME/uvbox/` or `~
 
 ### Why Go?
 
-- **⚡ Blazing Fast Compilation** — ~1 second vs ~30 seconds for Rust-based alternatives
-- **🌍 True Cross-Compilation** — Build macOS binaries from Linux/Windows without licenses or complex toolchains
-- **📦 Zero Dependencies** — Just set `GOOS` and `GOARCH` environment variables
-- **🎯 Simple Deployment** — Single static binary, no runtime dependencies
+- **Fast Compilation** — ~1 second vs ~30 seconds for Rust-based alternatives
+- **Cross-compilation out of the box** — Build macOS binaries from Linux/Windows without licenses or complex toolchains
+- **No dependencies** — Just set `GOOS` and `GOARCH` environment variables
+- **Compiles into static binary** — Just a single executable, with no runtime dependencies
 
 ### Runtime Behavior
 
