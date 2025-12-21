@@ -29,7 +29,7 @@
 
 **`uvbox`** generates standalone executables that bootstrap an embedded [uv](https://github.com/astral-sh/uv) installation to automatically setup and run your Python application in a fully isolated environment — for any platform, from any platform.
 
-**No Python required on the target system.** The binary handles everything: downloads the right Python version, creates a virtual environment, installs dependencies, and runs your app.
+**Python is not required on the target system to run your application.** The binary handles everything: downloads the right Python version, creates a virtual environment, installs dependencies, and runs your application.
 
 <div align="center">
   <img src="./assets/demo.gif" alt="uvbox demo">
