@@ -37,13 +37,13 @@
 
 ## Features
 
-- **📦 Package from PyPI or Wheels** — Install your application from package indexes or choose to bundle local wheel files
-- **🚀 True Cross-Compilation** — Build binaries for Linux, macOS, and Windows (AMD64/ARM64) from any platform in seconds
-- **🔄 Auto-Updates** — Built-in version checking and self-update/fallback capabilities for your binaries
-- **🔒 Dependency Freezing** — Use constraints files to ensure reproducible installations
-- **🌍 Enterprise-Friendly** — Support for custom registries, mirrors, and CA certificates
-- **⚡ Fast** — Powered by Go, builds complete in very few seconds
-- **📝 Simple Integration** — Add as a dev dependency to your Python project
+- **`Package from PyPI or Wheels`** — Install your application from package indexes or choose to bundle local wheel files
+- **`True Cross-Compilation`** — Build binaries for Linux, macOS, and Windows (AMD64/ARM64) from any platform in seconds
+- **`Auto-Updates`** — Built-in version checking and self-update/fallback capabilities for your binaries
+- **`Dependency Freezing`** — Use constraints files to ensure reproducible installations
+- **`Enterprise-Friendly`** — Support for custom registries, mirrors, and CA certificates
+- **`Fast`** — Powered by Go, builds complete in very few seconds
+- **`Simple Integration`** — Add as a dev dependency to your Python project
 
 ## Comparison
 
