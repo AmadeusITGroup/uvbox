@@ -372,9 +372,10 @@ auto-update = true
 
 See the [`examples/`](./examples) directory for complete working examples:
 
-- [`examples/pypi/simple-app.toml`](./examples/pypi/simple-app.toml) — Minimal PyPI package
-- [`examples/pypi/custom-registry.toml`](./examples/pypi/custom-registry.toml) — Custom registry and mirrors
-- [`examples/pypi/custom-certs.toml`](./examples/pypi/custom-certs.toml) — Corporate CA bundle
+- [`simple-app.toml`](./examples/pypi/simple-app.toml) — Minimal PyPI package
+- [`custom-registry.toml`](./examples/pypi/custom-registry.toml) — Custom registry and mirrors
+- [`custom-certs.toml`](./examples/pypi/custom-certs.toml) — Corporate CA bundle
+- [`eoptional-dependencies.toml`](./examples/pypi/optional-dependencies.toml) - Install a package with optional dependencies
 
 ## Requirements
 
