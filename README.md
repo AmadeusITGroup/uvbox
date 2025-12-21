@@ -27,7 +27,7 @@
 
 ## What is uvbox?
 
-**uvbox** generates standalone executables that bootstrap an embedded [uv](https://github.com/astral-sh/uv) installation to automatically setup and run your Python application in a fully isolated environment — for any platform, from any platform.
+**`uvbox`** generates standalone executables that bootstrap an embedded [uv](https://github.com/astral-sh/uv) installation to automatically setup and run your Python application in a fully isolated environment — for any platform, from any platform.
 
 **No Python required on the target system.** The binary handles everything: downloads the right Python version, creates a virtual environment, installs dependencies, and runs your app.
 
@@ -37,13 +37,13 @@
 
 ## Features
 
-- **`Package from PyPI or Wheels`** — Install your application from package indexes or choose to bundle local wheel files
-- **`True Cross-Compilation`** — Build binaries for Linux, macOS, and Windows (AMD64/ARM64) from any platform in seconds
-- **`Auto-Updates`** — Built-in version checking and self-update/fallback capabilities for your binaries
-- **`Dependency Freezing`** — Use constraints files to ensure reproducible installations
-- **`Enterprise-Friendly`** — Support for custom registries, mirrors, and CA certificates
-- **`Fast`** — Powered by Go, builds complete in very few seconds
-- **`Simple Integration`** — Add as a dev dependency to your Python project
+- **Package from PyPI or Wheels** — Install your application from package indexes or choose to bundle local wheel files
+- **True Cross-Compilation** — Build binaries for Linux, macOS, and Windows (AMD64/ARM64) from any platform in seconds
+- **Auto-Updates** — Built-in version checking and self-update/fallback capabilities for your binaries
+- **Dependency Freezing** — Use constraints files to ensure reproducible installations
+- **Enterprise-Friendly** — Support for custom registries, mirrors, and CA certificates
+- **Fast** — Powered by Go, builds complete in very few seconds
+- **Simple Integration** — Add as a dev dependency to your Python project
 
 ## Comparison
 
