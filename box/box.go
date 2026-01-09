@@ -93,11 +93,17 @@ func (b *Box) logUvEnvironmentVariables() {
 }
 
 func (b *Box) commandsEnvironment() ([]string, error) {
-	// Get uv environment variables
+	// Get uv environment variables for this box
 	env := b.uvEnvironmentVariables()
 
-	// Add current user environment variables
-	env = append(env, os.Environ()...)
+	// Add current user environment variables, filtering out any Python-related
+	// environment variables that could cause conflicts when a uvbox binary
+	// runs another uvbox binary
+	userEnv, filteredKeys := filterOutPythonEnvironmentVariables(os.Environ())
+	if len(filteredKeys) > 0 {
+		logger.Debug("Filtered out inherited Python environment variables", logger.ArgsFromMap(map[string]any{"filteredKeys": filteredKeys}))
+	}
+	env = append(env, userEnv...)
 
 	// Add SSL_CERT_FILE and REQUESTS_CA_BUNDLE if asked by the user
 	if b.CertificatesBundle != "" {
@@ -185,4 +191,28 @@ func environListAsMap(environment []string) map[string]any {
 		}
 	}
 	return envMap
+}
+
+// filterOutPythonEnvironmentVariables removes environment variables that could
+// cause conflicts when a uvbox binary runs another uvbox binary.
+// Filtered variables:
+// - UV_* : uv tool configuration (each uvbox binary has its own)
+// - VIRTUAL_ENV : virtual environment path (uvbox uses its own isolated env)
+// - PYTHONPATH : Python module search path (uvbox should use its own packages)
+func filterOutPythonEnvironmentVariables(env []string) (filtered []string, removed []string) {
+	filtered = []string{}
+	removed = []string{}
+	for _, e := range env {
+		key := e
+		if idx := strings.Index(e, "="); idx != -1 {
+			key = e[:idx]
+		}
+
+		if strings.HasPrefix(key, "UV_") || key == "VIRTUAL_ENV" || key == "PYTHONPATH" {
+			removed = append(removed, key)
+		} else {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered, removed
 }
