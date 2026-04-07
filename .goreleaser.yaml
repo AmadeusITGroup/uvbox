@@ -4,8 +4,10 @@ report_sizes: true
 
 before:
   hooks:
+    # Clean folders. Goreleaser only clean the dist/ folder
+    - rm -rf build wheels
     # Ensure the embedded box repository archive is generated before building
-    - bash -lc "cd boxer && go generate ./..."
+    - bash -lc "cd boxer && go generate"
 
 builds:
   - id: uvbox
@@ -55,6 +57,14 @@ nfpms:
       - uvbox
     priority: extra
     section: utils
+
+sboms:
+  - id: archive
+    artifacts: archive
+    documents:
+      - "{{ .ArtifactName }}.cdx.json"
+    cmd: python3
+    args: ["../pypi/uvbox/sbom.py", "--os", "{{ .Os }}", "--arch", "{{ .Arch }}", "--output", "$document"]
 
 release:
   # Use GitHub Releases (default)

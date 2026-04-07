@@ -6,6 +6,7 @@ golangci-lint-langserver = "latest"
 goreleaser = "latest"
 nfpm = "latest"
 "pipx:hatchling" = "latest"
+"github:CycloneDX/cyclonedx-gomod" = "latest"
 
 [tasks.format]
 description = "Format all Go code"
@@ -13,7 +14,7 @@ run = "gofmt -w boxer/ box/"
 
 [tasks.build]
 description = "Build release artifacts locally with goreleaser"
-run = "goreleaser build --snapshot --clean"
+run = "goreleaser release --snapshot --clean --skip publish"
 
 [tasks."generate:boxer"]
 description = "Run go generate on boxer folder"

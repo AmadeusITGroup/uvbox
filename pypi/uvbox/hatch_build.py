@@ -110,6 +110,18 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
         # Map the binary to a console script
         build_data["shared_scripts"] = {str(binary_path): console_script_name}
 
+        # Include SBOM file if provided
+        sbom_path_str = os.environ.get("UVBOX_SBOM_FILE")
+        if not sbom_path_str:
+            print("ERROR: UVBOX_SBOM_FILE environment variable not set")
+            print(
+                "This variable should contain the path to the sbom to include in the wheel"
+            )
+            sys.exit(1)
+        sbom_path = Path(sbom_path_str)
+        validate_required_file(sbom_path)
+        build_data["sbom_files"].append(str(sbom_path))
+
 
 class CustomMetadataHook(MetadataHookInterface):
     """Custom metadata hook to set dynamic metadata"""

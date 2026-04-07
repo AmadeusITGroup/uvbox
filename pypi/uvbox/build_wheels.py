@@ -12,95 +12,15 @@ Inspired by python-nfpm: https://gitlab.com/vmeurisse/python-nfpm
 """
 
 import os
+import shutil
 import subprocess
 import sys
 from argparse import ArgumentParser
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 
-# Constants for project structure
-PROJECT_ROOT = Path(
-    __file__
-).parent.parent.parent  # Go up from pypi/uvbox/ to project root
-BUILD_DIR = PROJECT_ROOT / "build"
-DIST_DIR = PROJECT_ROOT / "wheels"
-
-
-@dataclass(frozen=True)
-class Platform:
-    """
-    Platform configuration for cross-platform wheel building.
-
-    Attributes:
-        binary_suffix: File extension for the binary on this platform (e.g., '.exe' for Windows)
-        wheel_platform: Platform tag used in wheel filename according to PEP 427
-        go_os: GOOS value for Go cross-compilation
-        go_arch: GOARCH value for Go cross-compilation
-    """
-
-    binary_suffix: str
-    wheel_platform: str
-    go_os: str
-    go_arch: str
-
-    def get_binary_filename(self, binary_name: str) -> str:
-        """
-        Generate the full binary filename for this platform.
-
-        Args:
-            binary_name: Base name of the binary without extension
-
-        Returns:
-            Full binary filename including platform-specific extension
-        """
-        return f"{binary_name}{self.binary_suffix}"
-
-    def __str__(self) -> str:
-        """Return a string representation of the platform."""
-        return f"{self.go_os}_{self.go_arch}"
-
-
-# Platform mappings for wheel tags
-# Reference: https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/
-SUPPORTED_PLATFORMS: List[Platform] = [
-    Platform(
-        binary_suffix="",
-        wheel_platform="manylinux2014_x86_64",
-        go_os="linux",
-        go_arch="amd64",
-    ),
-    Platform(
-        binary_suffix="",
-        wheel_platform="manylinux2014_aarch64",
-        go_os="linux",
-        go_arch="arm64",
-    ),
-    Platform(
-        binary_suffix="",
-        wheel_platform="macosx_10_9_x86_64",
-        go_os="darwin",
-        go_arch="amd64",
-    ),
-    Platform(
-        binary_suffix="",
-        wheel_platform="macosx_11_0_arm64",
-        go_os="darwin",
-        go_arch="arm64",
-    ),
-    Platform(
-        binary_suffix=".exe",
-        wheel_platform="win_amd64",
-        go_os="windows",
-        go_arch="amd64",
-    ),
-    Platform(
-        binary_suffix=".exe",
-        wheel_platform="win_arm64",
-        go_os="windows",
-        go_arch="arm64",
-    ),
-]
+from sbom import generate_sbom
+from utils import BUILD_DIR, DIST_DIR, PROJECT_ROOT, Platform, find_platform_by_go_target
 
 
 def build_python_wheel(
@@ -120,7 +40,9 @@ def build_python_wheel(
     """
     # Create platform-specific build directory
     wheel_build_dir = BUILD_DIR / f"wheel_{platform.go_os}_{platform.go_arch}"
-    wheel_build_dir.mkdir(parents=True, exist_ok=True)
+    if wheel_build_dir.exists():
+        shutil.rmtree(wheel_build_dir)
+    wheel_build_dir.mkdir(parents=True)
 
     # Copy necessary build files to the build directory
     pypi_source_dir = PROJECT_ROOT / "pypi" / "uvbox"
@@ -143,12 +65,17 @@ def build_python_wheel(
 
     # Set environment variables for the hatch build process
     build_env = os.environ.copy()
+    # Generate SBOM for the target platform
+    sbom_path = wheel_build_dir / f"{binary_name}.cdx.json"
+    generate_sbom(platform, sbom_path)
+
     build_env.update(
         {
             "UVBOX_BINARY_FILE": str(binary_path),
             "UVBOX_TAG": f"py3-none-{platform.wheel_platform}",
             "UVBOX_VERSION": version,
             "UVBOX_BINARY_NAME": binary_name,
+            "UVBOX_SBOM_FILE": str(sbom_path),
         }
     )
 
@@ -182,23 +109,6 @@ def normalize_version_for_pep440(version: str) -> str:
     return normalized_version
 
 
-def find_platform_by_go_target(go_os: str, go_arch: str) -> Optional[Platform]:
-    """
-    Find a platform configuration matching the given Go OS and architecture.
-
-    Args:
-        go_os: Go operating system identifier (e.g., 'linux', 'darwin', 'windows')
-        go_arch: Go architecture identifier (e.g., 'amd64', 'arm64')
-
-    Returns:
-        Matching Platform instance, or None if no match found
-    """
-    for platform in SUPPORTED_PLATFORMS:
-        if platform.go_os == go_os and platform.go_arch == go_arch:
-            return platform
-    return None
-
-
 def build_single_platform_wheel(
     go_os: str,
     go_arch: str,
@@ -224,10 +134,6 @@ def build_single_platform_wheel(
     """
     # Find the matching platform configuration
     platform = find_platform_by_go_target(go_os, go_arch)
-    if not platform:
-        print(f"ERROR: Unsupported platform: {go_os}/{go_arch}")
-        print(f"Supported platforms: {[str(p) for p in SUPPORTED_PLATFORMS]}")
-        sys.exit(1)
 
     # Validate that the binary artifact exists
     binary_path = Path(binary_artifact_path)
