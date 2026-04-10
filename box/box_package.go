@@ -157,6 +157,9 @@ func (b *Box) InstalledPackagePath() (string, error) {
 }
 
 func (b *Box) uvToolInstall(packageVersion, constraintsFile string) error {
+	if GIT_SOURCE != "" {
+		return b.uvToolInstallGit(constraintsFile)
+	}
 	if INSTALL_WHEELS == "no" {
 		return b.uvToolInstallPypi(packageVersion, constraintsFile)
 	} else {
