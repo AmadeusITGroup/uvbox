@@ -31,6 +31,7 @@ var Config string
 var Output string
 var Nfpm string
 var ReleaseVersion string
+var GitSource string
 
 var Darwin bool
 var Linux bool
@@ -104,6 +105,35 @@ func main() {
 	wheelCmd.Flags().BoolVarP(&Amd, "amd", "", false, "Build for AMD64")
 	wheelCmd.Flags().BoolVarP(&Arm, "arm", "", false, "build for ARM64")
 
+	// UVBOX GIT
+	var gitCmd = &cobra.Command{
+		Use:   "git <git-spec>",
+		Short: "Use a git repository as package source to generate a standalone executable",
+		Long: "Use a git repository as package source to generate a standalone executable.\n\n" +
+			"The git spec is passed through to `uv tool install --from` verbatim.\n" +
+			"Examples:\n" +
+			"  uvbox git git+https://github.com/org/repo\n" +
+			"  uvbox git git+https://github.com/org/repo@main\n" +
+			"  uvbox git git+https://github.com/org/repo@v1.0.0",
+		Args: cobra.ExactArgs(1),
+		PreRun: func(cmd *cobra.Command, args []string) {
+			GitSource = args[0]
+			preRun()
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := run(); err != nil {
+				logger.Fatal("failed to run git command", logger.Args("error", err))
+			}
+		},
+	}
+	gitCmd.Flags().StringVarP(&Config, "config", "c", "", "Configuration file")
+	gitCmd.Flags().StringVarP(&Output, "output", "o", "dist", "Output directory")
+	gitCmd.Flags().BoolVarP(&Darwin, "darwin", "d", false, "Build for darwin")
+	gitCmd.Flags().BoolVarP(&Linux, "linux", "l", false, "Build for linux")
+	gitCmd.Flags().BoolVarP(&Windows, "windows", "w", false, "Build for windows")
+	gitCmd.Flags().BoolVarP(&Amd, "amd", "", false, "Build for AMD64")
+	gitCmd.Flags().BoolVarP(&Arm, "arm", "", false, "build for ARM64")
+
 	// UVBOX
 	var rootCmd = &cobra.Command{
 		Use:   "uvbox",
@@ -112,6 +142,7 @@ func main() {
 	}
 	rootCmd.AddCommand(pypiCmd)
 	rootCmd.AddCommand(wheelCmd)
+	rootCmd.AddCommand(gitCmd)
 	rootCmd.PersistentFlags().StringVarP(&ReleaseVersion, "release-version", "", "0.0.0", "Specify a version for the binaries. Will be used for example for versionning linux packages.")
 	rootCmd.PersistentFlags().BoolVarP(&NoBanner, "no-banner", "", false, "Do not display the banner")
 	rootCmd.PersistentFlags().StringVarP(&Nfpm, "nfpm", "", "", "Generate linux packages with the given nfpm configuration file")
@@ -127,6 +158,7 @@ func preRun() {
 	validateGoAvailability()
 	validateNfpmAvailability()
 	validateWheelsToEmbed()
+	validateGitSourceFlag()
 }
 
 func validateOutputDirectoryFlag() {
@@ -158,6 +190,15 @@ func validateWheelsToEmbed() {
 		} else if !ok {
 			logger.Fatal("wheel should be an existing file", logger.Args("path", wheel))
 		}
+	}
+}
+
+func validateGitSourceFlag() {
+	if GitSource == "" {
+		return
+	}
+	if err := validateGitSource(GitSource); err != nil {
+		logger.Fatal("invalid git source", logger.Args("error", err))
 	}
 }
 
@@ -328,11 +369,8 @@ func goGenerate(repository, platform, arch string) error {
 func goBuild(repository, buildName, platform, arch string) error {
 	var outbuf, errbuf strings.Builder
 
-	// Compilation flag
-	ldflags := "-s -w"
-	if len(WheelsToEmbed) > 0 {
-		ldflags += " -X main.INSTALL_WHEELS=yes"
-	}
+	// Compilation flag — see boxer/git.go for the pure helper and its tests.
+	ldflags := buildGoBuildLdflags(GitSource, WheelsToEmbed)
 
 	// Command
 	cmd := exec.Command("go", "build", "-o", buildName)
