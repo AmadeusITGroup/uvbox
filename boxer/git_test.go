@@ -48,3 +48,44 @@ func TestBuildGoBuildLdflags_GitDoesNotOmitOnWheels(t *testing.T) {
 		t.Errorf("expected -X main.GIT_SOURCE in output, got %q", got)
 	}
 }
+
+func TestValidateGitSource_Empty(t *testing.T) {
+	if err := validateGitSource(""); err == nil {
+		t.Fatal("expected error for empty git source, got nil")
+	}
+}
+
+func TestValidateGitSource_MissingGitPrefix(t *testing.T) {
+	cases := []string{
+		"https://github.com/org/repo",
+		"http://github.com/org/repo",
+		"github.com/org/repo",
+		"ssh://git@github.com/org/repo",
+		"file:///tmp/repo",
+	}
+	for _, s := range cases {
+		t.Run(s, func(t *testing.T) {
+			if err := validateGitSource(s); err == nil {
+				t.Fatalf("expected error for %q, got nil", s)
+			}
+		})
+	}
+}
+
+func TestValidateGitSource_AcceptsValidSpecs(t *testing.T) {
+	cases := []string{
+		"git+https://github.com/org/repo",
+		"git+https://github.com/org/repo@main",
+		"git+https://github.com/org/repo@v1.0.0",
+		"git+https://github.com/org/repo@abc123def456",
+		"git+ssh://git@github.com/org/repo",
+		"git+ssh://git@github.com/org/repo@main",
+	}
+	for _, s := range cases {
+		t.Run(s, func(t *testing.T) {
+			if err := validateGitSource(s); err != nil {
+				t.Fatalf("expected %q to be valid, got error: %v", s, err)
+			}
+		})
+	}
+}
