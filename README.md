@@ -37,7 +37,7 @@
 
 ## Features
 
-- **Package from PyPI or Wheels** — Install your application from package indexes or choose to bundle local wheel files
+- **Package from PyPI, Wheels, or Git** — Install your application from package indexes, bundle local wheel files, or fetch from a git repository
 - **True Cross-Compilation** — Build binaries for Linux, macOS, and Windows (AMD64/ARM64) from any platform in seconds
 - **Auto-Updates** — Built-in version checking and self-update/fallback capabilities for your binaries
 - **Dependency Freezing** — Use constraints files to ensure reproducible installations
@@ -115,6 +115,42 @@ Package local wheel files instead of installing from PyPI:
 ```bash
 uvbox wheel --config uvbox.toml ./my-app.whl
 ```
+
+### Build from a Git Repository
+
+Package an application from a git repository that isn't published to PyPI:
+
+```bash
+# Default branch
+uvbox git git+https://github.com/org/repo --config uvbox.toml
+
+# Specific tag
+uvbox git git+https://github.com/org/repo@v1.0.0
+
+# Specific branch
+uvbox git git+https://github.com/org/repo@main
+
+# Specific commit
+uvbox git git+https://github.com/org/repo@abc123
+
+# SSH (uses your local git credentials)
+uvbox git git+ssh://git@github.com/org/private-repo
+```
+
+The git spec is passed through to `uv tool install --from` verbatim at runtime
+on the end-user's machine. `uvbox` itself never clones the repository at build
+time — the clone happens on first run of the generated binary. This means you
+can build binaries for a private repo without providing credentials to the
+build machine; the end user's local git/ssh setup handles authentication.
+
+**Behavior of `[package.version]` for git builds:**
+- `static` and `dynamic` are ignored for install resolution — the git ref in
+  the spec is the source of truth.
+- `auto-update = true` re-runs `uv tool install --from <spec> --upgrade` on
+  every invocation, giving you the "fresh dependencies every run" behavior
+  equivalent to `pycrucible`'s `delete_after_run = true`.
+- Leave `dynamic` unset when tracking a moving branch; setting it will disable
+  the always-update behavior.
 
 ## Configuration
 
