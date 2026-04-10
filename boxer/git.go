@@ -2,33 +2,48 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 // buildGoBuildLdflags constructs the ldflags string passed to `go build`
 // via the `GOFLAGS=-ldflags=...` environment variable. Pure function:
 // no side effects, no package-level state reads, so it can be unit-tested
-// without invoking go build. The arguments mirror the inputs the caller
-// has at the point of invocation (gitSource CLI arg, WheelsToEmbed list).
+// without invoking go build.
 //
 // Behavior:
 //   - Always includes "-s -w" to strip debug info.
 //   - If wheels are embedded, adds "-X main.INSTALL_WHEELS=yes" (unchanged
 //     from the pre-git-support behavior — regression test locks this in).
-//   - If a git source is set, adds "-X main.GIT_SOURCE=<spec>".
 //
-// The git and wheel flags are independent: validateGitSource + CLI command
-// separation ensure only one of the two is actually set in practice. This
-// function does not enforce mutual exclusion; the CLI layer does.
-func buildGoBuildLdflags(gitSource string, wheelsToEmbed []string) string {
+// Note on git source: unlike wheels, the git source is NOT injected via
+// ldflags. Go's GOFLAGS parser (strings.Fields) does not support spaces
+// inside flag values, so `-X main.GIT_SOURCE=<spec>` breaks parsing for
+// any ldflag string containing `-X`. Instead, the git source is written
+// to box/git_source.txt and embedded via //go:embed — see
+// writeGitSourceFile below and box/box_package_git.go.
+func buildGoBuildLdflags(wheelsToEmbed []string) string {
 	ldflags := "-s -w"
 	if len(wheelsToEmbed) > 0 {
 		ldflags += " -X main.INSTALL_WHEELS=yes"
 	}
-	if gitSource != "" {
-		ldflags += fmt.Sprintf(" -X main.GIT_SOURCE=%s", gitSource)
-	}
 	return ldflags
+}
+
+// writeGitSourceFile writes the provided git source string to
+// <boxRepository>/git_source.txt, which is embedded into the compiled
+// binary via //go:embed in box/box_package_git.go. The file is always
+// written (even with an empty string) to satisfy the go:embed directive,
+// which requires the target file to exist at build time. An empty file
+// means "not a git build"; a non-empty file means "git build, this is
+// the spec to pass to uv tool install --from".
+func writeGitSourceFile(boxRepository, gitSource string) error {
+	target := filepath.Join(boxRepository, "git_source.txt")
+	if err := os.WriteFile(target, []byte(gitSource), 0644); err != nil {
+		return fmt.Errorf("failed to write git source file to %s: %w", target, err)
+	}
+	return nil
 }
 
 // validateGitSource is called from preRun when a GitSource CLI argument

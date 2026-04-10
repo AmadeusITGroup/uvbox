@@ -1,15 +1,17 @@
 package main
 
 import (
-	"strings"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
 // TestBuildGoBuildLdflags_Pypi is a regression guard: the ldflag string
 // produced for a plain pypi build must match what goBuild used to produce
-// before git support was added.
+// before git support was added. Git support does NOT inject ldflags
+// (see boxer/git.go for why) so adding it must not change this output.
 func TestBuildGoBuildLdflags_Pypi(t *testing.T) {
-	got := buildGoBuildLdflags("", nil)
+	got := buildGoBuildLdflags(nil)
 	want := "-s -w"
 	if got != want {
 		t.Fatalf("buildGoBuildLdflags pypi = %q, want %q", got, want)
@@ -18,34 +20,42 @@ func TestBuildGoBuildLdflags_Pypi(t *testing.T) {
 
 // TestBuildGoBuildLdflags_Wheel is a regression guard for the wheel path.
 func TestBuildGoBuildLdflags_Wheel(t *testing.T) {
-	got := buildGoBuildLdflags("", []string{"some-wheel.whl"})
+	got := buildGoBuildLdflags([]string{"some-wheel.whl"})
 	want := "-s -w -X main.INSTALL_WHEELS=yes"
 	if got != want {
 		t.Fatalf("buildGoBuildLdflags wheel = %q, want %q", got, want)
 	}
 }
 
-func TestBuildGoBuildLdflags_Git(t *testing.T) {
-	got := buildGoBuildLdflags("git+https://github.com/org/repo@main", nil)
-	if !strings.Contains(got, "-s -w") {
-		t.Errorf("expected base flags -s -w, got %q", got)
+func TestWriteGitSourceFile_Empty(t *testing.T) {
+	dir := t.TempDir()
+	if err := writeGitSourceFile(dir, ""); err != nil {
+		t.Fatalf("writeGitSourceFile empty failed: %v", err)
 	}
-	if !strings.Contains(got, "-X main.GIT_SOURCE=git+https://github.com/org/repo@main") {
-		t.Errorf("expected -X main.GIT_SOURCE, got %q", got)
+
+	got, err := os.ReadFile(filepath.Join(dir, "git_source.txt"))
+	if err != nil {
+		t.Fatalf("failed to read written file: %v", err)
 	}
-	if strings.Contains(got, "INSTALL_WHEELS") {
-		t.Errorf("git build must not set INSTALL_WHEELS, got %q", got)
+	if string(got) != "" {
+		t.Fatalf("expected empty file, got %q", string(got))
 	}
 }
 
-// TestBuildGoBuildLdflags_GitDoesNotOmitOnWheels covers the edge case
-// where both inputs are set. CLI validation enforces mutual exclusion at
-// the command layer; this test just verifies the helper itself still emits
-// the git flag if both happen to be passed.
-func TestBuildGoBuildLdflags_GitDoesNotOmitOnWheels(t *testing.T) {
-	got := buildGoBuildLdflags("git+https://github.com/org/repo", []string{"some.whl"})
-	if !strings.Contains(got, "-X main.GIT_SOURCE=git+https://github.com/org/repo") {
-		t.Errorf("expected -X main.GIT_SOURCE in output, got %q", got)
+func TestWriteGitSourceFile_WithSpec(t *testing.T) {
+	dir := t.TempDir()
+	spec := "git+https://github.com/org/repo@main"
+
+	if err := writeGitSourceFile(dir, spec); err != nil {
+		t.Fatalf("writeGitSourceFile failed: %v", err)
+	}
+
+	got, err := os.ReadFile(filepath.Join(dir, "git_source.txt"))
+	if err != nil {
+		t.Fatalf("failed to read written file: %v", err)
+	}
+	if string(got) != spec {
+		t.Fatalf("expected %q, got %q", spec, string(got))
 	}
 }
 

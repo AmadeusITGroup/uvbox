@@ -1,16 +1,32 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
-// GIT_SOURCE is populated via ldflags at build time (-X main.GIT_SOURCE=git+...)
-// when the binary is produced by `uvbox git <spec>`. When empty, the binary was
-// produced by `uvbox pypi` or `uvbox wheel` and the runtime install path skips
-// the git dispatch entirely.
-var GIT_SOURCE = ""
+// gitSourceContent is the raw content of git_source.txt, embedded at build
+// time. For `uvbox git <spec>` builds, boxer writes the git spec into this
+// file before invoking `go build`. For pypi/wheel builds, the file exists
+// but is empty — matching the committed placeholder in box/git_source.txt.
+//
+// We use a file-embed instead of an ldflag (-X main.GIT_SOURCE=...) because
+// Go's GOFLAGS parser does not support spaces inside flag values, and the
+// boxer build path routes ldflags through GOFLAGS for Windows compatibility
+// (see issue #7). Passing `-X main.FOO=bar` via GOFLAGS fails to parse.
+//
+//go:embed git_source.txt
+var gitSourceContent string
+
+// GIT_SOURCE is the embedded git source string (e.g., "git+https://github.com/org/repo@main")
+// for binaries produced by `uvbox git <spec>`. It is empty for pypi/wheel
+// builds, in which case the runtime install path skips the git dispatch
+// entirely. Trimmed on init to tolerate trailing whitespace/newlines in
+// the embedded file.
+var GIT_SOURCE = strings.TrimSpace(gitSourceContent)
 
 // buildUvToolInstallFromArgs constructs the command-line arguments for
 // `uv tool install --from <gitSource> <packageName> --upgrade`, optionally
