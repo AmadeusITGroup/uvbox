@@ -70,6 +70,9 @@ func (c Configuration) PanicIfInvalid() {
 func (c Configuration) ComputeIdentifier() string {
 	hasher := crypto.SHA1.New()
 	textToHash := fmt.Sprintf("%s%s%s%t", c.Package.Name, c.Package.Script, c.Package.Version.Static, c.AutoUpdateEnabled())
+	if GIT_SOURCE != "" {
+		textToHash += GIT_SOURCE
+	}
 	_, err := io.WriteString(hasher, textToHash)
 	if err != nil {
 		logger.Fatal("Failed to hash script value", logger.Args("error", err))
