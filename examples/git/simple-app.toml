@@ -1,0 +1,20 @@
+# Build a uvbox binary from a git repository.
+#
+# Usage:
+#   uvbox git git+https://github.com/<org>/<repo> --config examples/git/simple-app.toml
+#
+# The git spec is passed through to `uv tool install --from` at runtime, so
+# any form uv accepts works: @main, @v1.0.0, @<commit-sha>, ssh:// URLs, etc.
+#
+# [package].name must match the distribution name the package registers
+# (what `uv tool list` reports after installation).
+# [package].script must match an entry from the package's [project.scripts].
+
+[package]
+name = "my-app"
+script = "my-app"
+
+# To re-resolve the git ref on every run (equivalent to pycrucible's
+# delete_after_run=true), uncomment:
+# [package.version]
+# auto-update = true
