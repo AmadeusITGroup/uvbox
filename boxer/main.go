@@ -112,7 +112,7 @@ func main() {
 	}
 	rootCmd.AddCommand(pypiCmd)
 	rootCmd.AddCommand(wheelCmd)
-	rootCmd.PersistentFlags().StringVarP(&ReleaseVersion, "release-version", "", "0.0.0", "Specify a version for the binaries. Will be used for example for versionning linux packages.")
+	rootCmd.PersistentFlags().StringVarP(&ReleaseVersion, "release-version", "", "0.0.0", "Specify a version for the binaries. Will be used for example for versioning linux packages.")
 	rootCmd.PersistentFlags().BoolVarP(&NoBanner, "no-banner", "", false, "Do not display the banner")
 	rootCmd.PersistentFlags().StringVarP(&Nfpm, "nfpm", "", "", "Generate linux packages with the given nfpm configuration file")
 
@@ -245,7 +245,7 @@ func determineBuildsTargets() ([]string, []string) {
 }
 
 func run() error {
-	// Diplay banner
+	// Display banner
 	if !NoBanner {
 		renderer := pterm.DefaultBigText.WithLetters(
 			putils.LettersFromStringWithStyle("UV", pterm.FgCyan.ToStyle()),

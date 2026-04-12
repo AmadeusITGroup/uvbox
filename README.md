@@ -4,7 +4,7 @@
 
 ### **Fast, simple and cross-platform Python application packaging**
 
-*Package your Python apps as self-boostrapping executables for every platforms.*
+*Package your Python apps as self-bootstrapping executables for every platforms.*
 
 [![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](https://www.python.org/)

@@ -1,0 +1,96 @@
+amends "package://github.com/jdx/hk/releases/download/v1.42.0/hk@1.42.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.42.0/hk@1.42.0#/Builtins.pkl"
+
+default_branch = "main"
+exclude = List(
+  "*.sum",
+  "*.tar.gz",
+  "assets",
+  "dist",
+  "build",
+  "wheels"
+)
+
+// ---------------------------------------------------------------------------
+// Go formatting (file-level, no workspace needed)
+// ---------------------------------------------------------------------------
+local go_formatters = new Mapping<String, Step> {
+  ["go-fumpt"] = Builtins.go_fumpt
+}
+
+// ---------------------------------------------------------------------------
+// Go analysis linters (workspace-aware via workspace_indicator = "go.mod")
+// hk runs each step once per module directory (box/, boxer/)
+// ---------------------------------------------------------------------------
+local go_linters = new Mapping<String, Step> {
+  ["golangci-lint"] = (Builtins.golangci_lint) {
+    workspace_indicator = "go.mod"
+  }
+  ["gomod-tidy"] {
+      workspace_indicator = "go.mod"
+      check = "cd {{ workspace }} && go mod tidy --diff"
+      fix = "cd {{workspace}} && go mod tidy"
+    }
+  ["go-vet"] = (Builtins.go_vet) {
+    workspace_indicator = "go.mod"
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Python linters
+// ---------------------------------------------------------------------------
+local python_linters = new Mapping<String, Step> {
+  ["ruff"] = Builtins.ruff
+  ["ruff-format"] = Builtins.ruff_format
+  ["python-check-ast"] = Builtins.python_check_ast
+  ["python-debug-statements"] = Builtins.python_debug_statements
+}
+
+// ---------------------------------------------------------------------------
+// CI / infrastructure linters
+// ---------------------------------------------------------------------------
+local infra_linters = new Mapping<String, Step> {
+  ["actionlint"] = Builtins.actionlint
+}
+
+// ---------------------------------------------------------------------------
+// Generic quality checks (hk built-in utilities, no external tools)
+// ---------------------------------------------------------------------------
+local quality_checks = new Mapping<String, Step> {
+  ["trailing-whitespace"] = Builtins.trailing_whitespace
+  ["newlines"] = Builtins.newlines
+  ["check-merge-conflict"] = Builtins.check_merge_conflict
+  ["check-added-large-files"] = Builtins.check_added_large_files
+  ["detect-private-key"] = Builtins.detect_private_key
+  ["check-case-conflict"] = Builtins.check_case_conflict
+  ["typos"] = Builtins.typos
+}
+
+// All linters combined (without commit-specific checks)
+local all_linters: Mapping<String, Step> =
+  go_formatters
+  + go_linters
+  + python_linters
+  + infra_linters
+  + quality_checks
+
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps {
+      ["no-commit-to-branch"] = Builtins.no_commit_to_branch
+      ...all_linters
+    }
+  }
+  ["check"] {
+    steps = all_linters
+  }
+  ["fix"] {
+    fix = true
+    steps = all_linters
+  }
+}

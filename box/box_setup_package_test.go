@@ -21,7 +21,7 @@ func installedTextBoxWithPackage(t *testing.T, homePath, packageName, packageVer
 
 	err = box.InstallPackage(packageVersion, packageConstraintsUrl)
 	if err != nil {
-		t.Fatalf("Error while installing package ''%s==%s' with contraints url '%s'", packageName, packageVersion, packageConstraintsUrl)
+		t.Fatalf("Error while installing package ''%s==%s' with constraints url '%s'", packageName, packageVersion, packageConstraintsUrl)
 	}
 
 	return box
