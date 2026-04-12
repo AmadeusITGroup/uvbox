@@ -1,6 +1,7 @@
 [tools]
 "github:caarlos0/svu" = "latest"
 go = "latest"
+python = "3"
 golangci-lint = "latest"
 golangci-lint-langserver = "latest"
 goreleaser = "latest"
@@ -73,6 +74,10 @@ depends = ["fmt-check:box", "lint:box", "test:box"]
 [tasks.ci]
 description = "Run all CI checks"
 depends = ["ci:boxer", "ci:box"]
+
+[tasks.e2e]
+description = "Run end-to-end tests (build, cross-compile, run)"
+run = "python scripts/e2e.py"
 
 [settings]
 jobs = 1
