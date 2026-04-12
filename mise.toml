@@ -1,13 +1,14 @@
 [tools]
 "github:caarlos0/svu" = "latest"
+"github:CycloneDX/cyclonedx-gomod" = "latest"
 go = "latest"
-python = "3"
+python = "3.14"
 golangci-lint = "latest"
 golangci-lint-langserver = "latest"
 goreleaser = "latest"
 nfpm = "latest"
+"pipx:build" = "latest"
 "pipx:hatchling" = "latest"
-"github:CycloneDX/cyclonedx-gomod" = "latest"
 ruff = "latest"
 typos = "latest"
 hk = { version = "1.43.0", os = ["linux", "macos/arm64", "windows"] }

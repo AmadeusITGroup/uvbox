@@ -17,7 +17,7 @@ on:
           - minor
           - major
       publish_to_pypi:
-        description: "Publish to producton PyPI. By default, it only releases to test PyPI."
+        description: "Publish to production PyPI. By default, it only releases to test PyPI."
         type: boolean
         default: true
 
@@ -38,16 +38,6 @@ jobs:
 
       - name: Setup mise
         uses: jdx/mise-action@v4
-
-      # Python is needed for GoReleaser post-build hooks that create Python wheels
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      # Dependencies used for wheel builds
-      - name: Install Python build tools
-        run: pip install hatchling build
 
       # Compute tag, create it, and push to remote
       - id: compute-tag

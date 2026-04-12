@@ -287,6 +287,10 @@ checksum = "sha256:1b870021e656847aec8fc7ff51bcacf1ab8a1e3cad722994fb30d4e3c7f3f
 url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Windows_x86_64.zip"
 provenance = "cosign"
 
+[[tools."pipx:build"]]
+version = "1.4.3"
+backend = "pipx:build"
+
 [[tools."pipx:hatchling"]]
 version = "1.29.0"
 backend = "pipx:hatchling"
