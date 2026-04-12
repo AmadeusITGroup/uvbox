@@ -437,7 +437,7 @@ func extractArchive(source []byte, destination string) error {
 
 func (b *Box) determineUvDownloadUrl() (string, error) {
 	baseReleasesUrl := "https://github.com/astral-sh/uv/releases/download"
-	baseVersion := "0.4.20"
+	baseVersion := "0.11.6"
 
 	releasesUrl := ""
 	version := ""
@@ -487,6 +487,10 @@ func downloadArchiveContent(url string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("failed to perform get request: %w", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return []byte{}, fmt.Errorf("failed to download archive from %s: unexpected HTTP status %s", url, resp.Status)
+	}
 
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {

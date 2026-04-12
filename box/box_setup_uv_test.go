@@ -143,7 +143,7 @@ func TestCanInvokeManualUvCommand(t *testing.T) {
 
 	box := installedTextBoxWithPackage(t, homePath, "cowsay", "6.1", "")
 
-	command := []string{"version"}
+	command := []string{"--version"}
 	returnCode, err := box.RunUv(command)
 	if err != nil {
 		logger.Fatal("could not run uv command", logger.Args("error", err))

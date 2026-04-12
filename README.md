@@ -184,7 +184,7 @@ path = "./ca-bundle.crt"
 
 [uv]
 # Optional: Specify which uv version to use
-version = "0.4.20"
+version = "0.11.6"
 # Optional: Use a mirror for downloading uv itself
 mirror = "https://mirror.example.com/uv/releases/download"
 # Configure uv runtime behavior with environment variables
@@ -226,7 +226,7 @@ The binary automatically sets `REQUESTS_CA_BUNDLE` and `SSL_CERT_FILE` environme
 #### `[uv]`
 Configure uv installation and behavior.
 
-- **`version`** — Specific uv version to download and use (e.g., `"0.4.20"`)
+- **`version`** — Specific uv version to download and use (e.g., `"0.11.6"`)
 - **`mirror`** — Alternative download URL for uv releases (e.g., `"https://mirror.example.com/uv/releases/download"`)
 - **`environment`** — Array of environment variables to set for uv runtime behavior
 
