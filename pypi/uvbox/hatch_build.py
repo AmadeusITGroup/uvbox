@@ -129,7 +129,7 @@ class CustomMetadataHook(MetadataHookInterface):
     @override
     def update(self, metadata: dict[str, Any]) -> None:
         # Find project root (go up from pypi/uvbox/ to project root)
-        project = Path(__file__).resolve().parent.parent.parent
+        Path(__file__).resolve().parent.parent.parent
 
         # # Get license file from project root
         # license_file = project / "LICENSE"
