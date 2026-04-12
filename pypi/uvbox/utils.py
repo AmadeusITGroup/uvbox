@@ -5,9 +5,7 @@ import sys
 from typing import List
 
 
-PROJECT_ROOT = Path(
-    __file__
-).parents[2]  # Go up from pypi/uvbox/ to project root
+PROJECT_ROOT = Path(__file__).parents[2]  # Go up from pypi/uvbox/ to project root
 BUILD_DIR = PROJECT_ROOT / "build"
 DIST_DIR = PROJECT_ROOT / "wheels"
 
@@ -86,6 +84,7 @@ SUPPORTED_PLATFORMS: List[Platform] = [
         go_arch="arm64",
     ),
 ]
+
 
 def find_platform_by_go_target(go_os: str, go_arch: str) -> Platform:
     """

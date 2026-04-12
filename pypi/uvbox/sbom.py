@@ -56,8 +56,12 @@ def _main():
         description="Generate a sbom for boxer project",
     )
 
-    parser.add_argument("--os", required=True, help="Target operating system (linux, darwin, windows)")
-    parser.add_argument("--arch", required=True, help="Target architecture (amd64, arm64)")
+    parser.add_argument(
+        "--os", required=True, help="Target operating system (linux, darwin, windows)"
+    )
+    parser.add_argument(
+        "--arch", required=True, help="Target architecture (amd64, arm64)"
+    )
     parser.add_argument("--output", required=True, help="Path for the generated sbom")
 
     args = parser.parse_args()

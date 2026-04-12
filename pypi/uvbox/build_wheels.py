@@ -20,7 +20,13 @@ from pathlib import Path
 from typing import Optional
 
 from sbom import generate_sbom
-from utils import BUILD_DIR, DIST_DIR, PROJECT_ROOT, Platform, find_platform_by_go_target
+from utils import (
+    BUILD_DIR,
+    DIST_DIR,
+    PROJECT_ROOT,
+    Platform,
+    find_platform_by_go_target,
+)
 
 
 def build_python_wheel(
