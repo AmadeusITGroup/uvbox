@@ -38,7 +38,7 @@ jobs:
 
       - name: Setup mise
         uses: jdx/mise-action@v3
-  
+
       # Python is needed for GoReleaser post-build hooks that create Python wheels
       - name: Set up Python
         uses: actions/setup-python@v5
