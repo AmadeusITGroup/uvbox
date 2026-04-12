@@ -21,6 +21,9 @@ boxer-pypi-golang/dist
 
 **/ca-bundle.crt
 
+# hk local overrides
+hk.local.pkl
+
 # GoReleaser output
 dist/
 build/
