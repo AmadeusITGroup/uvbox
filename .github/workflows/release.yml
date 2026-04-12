@@ -60,6 +60,7 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
 
       # Upload wheels as artifacts for publishing jobs
       - name: Upload wheels

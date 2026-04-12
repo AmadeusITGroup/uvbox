@@ -65,6 +65,11 @@ sboms:
       - "{{ .ArtifactName }}.cdx.json"
     cmd: python3
     args: ["../pypi/uvbox/sbom.py", "--os", "{{ .Os }}", "--arch", "{{ .Arch }}", "--output", "$document"]
+    # Re-export env vars needed by mise shims (python3, cyclonedx-gomod).
+    # Goreleaser's SBOM cataloger runs in dist/ and does not reliably propagate
+    # the parent environment, so mise fails its trust check on mise.toml.
+    env:
+      - "MISE_TRUSTED_CONFIG_PATHS={{ .Env.MISE_TRUSTED_CONFIG_PATHS }}"
 
 release:
   # Use GitHub Releases (default)
