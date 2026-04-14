@@ -13,6 +13,7 @@ ruff = "0.15.9"
 "github:CycloneDX/cyclonedx-gomod" = "latest"
 shellcheck = "latest"
 typos = "latest"
+zizmor = "latest"
 
 [env]
 HK_PKL_BACKEND = "pklr"
