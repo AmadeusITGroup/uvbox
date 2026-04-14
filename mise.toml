@@ -1,13 +1,21 @@
 [tools]
+"actionlint" = "latest"
 "github:caarlos0/svu" = "latest"
 go = "latest"
+hk = "1.42.0"
 python = "3"
 golangci-lint = "latest"
 golangci-lint-langserver = "latest"
 goreleaser = "latest"
 nfpm = "latest"
+ruff = "0.15.9"
 "pipx:hatchling" = "latest"
 "github:CycloneDX/cyclonedx-gomod" = "latest"
+shellcheck = "latest"
+typos = "latest"
+
+[env]
+HK_PKL_BACKEND = "pklr"
 
 [tasks.format]
 description = "Format all Go code"
@@ -51,6 +59,10 @@ run = "golangci-lint run"
 dir = "{{cwd}}/box"
 depends = ["generate:box"]
 
+[tasks."lint:hk"]
+description = "Run project level linters"
+run = "hk check --all"
+
 [tasks."test:boxer"]
 description = "Run tests in boxer/"
 run = "go test -v ./..."
@@ -73,7 +85,7 @@ depends = ["fmt-check:box", "lint:box", "test:box"]
 
 [tasks.ci]
 description = "Run all CI checks"
-depends = ["ci:boxer", "ci:box"]
+depends = ["lint:hk", "ci:boxer", "ci:box"]
 
 [tasks.e2e]
 description = "Run end-to-end tests (build, cross-compile, run)"
