@@ -51,6 +51,7 @@ local python_linters = new Mapping<String, Step> {
 // ---------------------------------------------------------------------------
 local infra_linters = new Mapping<String, Step> {
   ["actionlint"] = Builtins.actionlint
+  ["zizmor"] = Builtins.zizmor
 }
 
 // ---------------------------------------------------------------------------
