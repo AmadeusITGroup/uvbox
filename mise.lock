@@ -182,115 +182,240 @@ checksum = "sha256:39b900b6b18bdc0328a9a58539af2bfc0bdaad9c2f217c1afa7921717d11e
 url = "https://github.com/nametake/golangci-lint-langserver/releases/download/v0.0.12/golangci-lint-langserver_Windows_x86_64.zip"
 
 [[tools.goreleaser]]
-version = "2.15.2"
+version = "2.15.3"
 backend = "aqua:goreleaser/goreleaser"
 
 [tools.goreleaser."platforms.linux-arm64"]
-checksum = "sha256:5db66761a98f6693161e49e1a95d28d2673a892ba60cb4a5e16736cafd41c4c9"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Linux_arm64.tar.gz"
+checksum = "sha256:646b8f36329cf1ec02af18d40e7096973f62524bdef19c3690414e390a9f757d"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.goreleaser."platforms.linux-arm64-musl"]
-checksum = "sha256:5db66761a98f6693161e49e1a95d28d2673a892ba60cb4a5e16736cafd41c4c9"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Linux_arm64.tar.gz"
+checksum = "sha256:646b8f36329cf1ec02af18d40e7096973f62524bdef19c3690414e390a9f757d"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.goreleaser."platforms.linux-x64"]
-checksum = "sha256:0ebdbf0353aba566b969dde746cc4e4806f96c27aa2f3971b229a9df7611fedc"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Linux_x86_64.tar.gz"
-provenance = "cosign"
+checksum = "sha256:3b24b3a1629be21a9527d2f46f08b9bbf012c52fe33395714fe2c70acee57e0f"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Linux_x86_64.tar.gz"
+provenance = "github-attestations"
 
 [tools.goreleaser."platforms.linux-x64-musl"]
-checksum = "sha256:0ebdbf0353aba566b969dde746cc4e4806f96c27aa2f3971b229a9df7611fedc"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Linux_x86_64.tar.gz"
+checksum = "sha256:3b24b3a1629be21a9527d2f46f08b9bbf012c52fe33395714fe2c70acee57e0f"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Linux_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.goreleaser."platforms.macos-arm64"]
-checksum = "sha256:0e6bd67688ac949780bf1166813a91f89856898ef4c40d7d46c2c74ebaa4b9ee"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Darwin_all.tar.gz"
+checksum = "sha256:b8525b87b2cc722efd8dc5cd2af95d9f3a6e69dcb73990131e18e1d2372cf579"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Darwin_all.tar.gz"
 provenance = "cosign"
 
 [tools.goreleaser."platforms.macos-x64"]
-checksum = "sha256:0e6bd67688ac949780bf1166813a91f89856898ef4c40d7d46c2c74ebaa4b9ee"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Darwin_all.tar.gz"
+checksum = "sha256:b8525b87b2cc722efd8dc5cd2af95d9f3a6e69dcb73990131e18e1d2372cf579"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Darwin_all.tar.gz"
 provenance = "cosign"
 
 [tools.goreleaser."platforms.windows-x64"]
-checksum = "sha256:7459832946dbe122c144f8d7f87484d8572ca005b779310aa6bb03346e8de17a"
-url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.2/goreleaser_Windows_x86_64.zip"
+checksum = "sha256:8722fdebfc23e10a36356ddd59af0c1f52c4120ca847afd091bd34e09d8aae8c"
+url = "https://github.com/goreleaser/goreleaser/releases/download/v2.15.3/goreleaser_Windows_x86_64.zip"
 provenance = "cosign"
 
+[[tools.hk]]
+version = "1.43.0"
+backend = "aqua:jdx/hk"
+
+[tools.hk."platforms.linux-arm64"]
+checksum = "sha256:f3efa8f95505178bf0ec807ce468b31ada5f7379b9089828487b0c9e67fd67b1"
+url = "https://github.com/jdx/hk/releases/download/v1.43.0/hk-aarch64-unknown-linux-gnu.tar.gz"
+
+[tools.hk."platforms.linux-arm64-musl"]
+checksum = "sha256:f3efa8f95505178bf0ec807ce468b31ada5f7379b9089828487b0c9e67fd67b1"
+url = "https://github.com/jdx/hk/releases/download/v1.43.0/hk-aarch64-unknown-linux-gnu.tar.gz"
+
+[tools.hk."platforms.linux-x64"]
+checksum = "sha256:66ecbba59208e591101c83148708363e0b6dc4a5df1d41e0bcdbbdd27788f999"
+url = "https://github.com/jdx/hk/releases/download/v1.43.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+
+[tools.hk."platforms.linux-x64-musl"]
+checksum = "sha256:66ecbba59208e591101c83148708363e0b6dc4a5df1d41e0bcdbbdd27788f999"
+url = "https://github.com/jdx/hk/releases/download/v1.43.0/hk-x86_64-unknown-linux-gnu.tar.gz"
+
+[tools.hk."platforms.macos-arm64"]
+checksum = "sha256:7999590e3571b87db3b79b878afd45afc5b7a301c59ee6f28fde0056956e0aeb"
+url = "https://github.com/jdx/hk/releases/download/v1.43.0/hk-aarch64-apple-darwin.tar.gz"
+
+[tools.hk."platforms.windows-x64"]
+checksum = "sha256:cf053945bb446175fa4ce1f28fd9fcf0d24b4548cf7043cdd869249c1ff69d8d"
+url = "https://github.com/jdx/hk/releases/download/v1.43.0/hk-x86_64-pc-windows-msvc.zip"
+
 [[tools.nfpm]]
-version = "2.46.0"
+version = "2.46.1"
 backend = "aqua:goreleaser/nfpm"
 
 [tools.nfpm."platforms.linux-arm64"]
-checksum = "sha256:76e90a16cb96fda52d8b5c6ccf309d2a0a5eebe2cd32c5401647c41de71b6028"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Linux_arm64.tar.gz"
+checksum = "sha256:873a5187c826469b9d5e99470a1de72ca416aeba8a5779dcd01388d56124e4e4"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.nfpm."platforms.linux-arm64-musl"]
-checksum = "sha256:76e90a16cb96fda52d8b5c6ccf309d2a0a5eebe2cd32c5401647c41de71b6028"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Linux_arm64.tar.gz"
+checksum = "sha256:873a5187c826469b9d5e99470a1de72ca416aeba8a5779dcd01388d56124e4e4"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Linux_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.nfpm."platforms.linux-x64"]
-checksum = "sha256:43b4cb72cde2d6e61c02e5b330e3276882252bf67c057e089957f9dbd2c8de42"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Linux_x86_64.tar.gz"
+checksum = "sha256:f5305aa39f0ba26ec48e10dfe28d24fea97b846875e6e2c7578eff77fe02bb53"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Linux_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.nfpm."platforms.linux-x64-musl"]
-checksum = "sha256:43b4cb72cde2d6e61c02e5b330e3276882252bf67c057e089957f9dbd2c8de42"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Linux_x86_64.tar.gz"
+checksum = "sha256:f5305aa39f0ba26ec48e10dfe28d24fea97b846875e6e2c7578eff77fe02bb53"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Linux_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.nfpm."platforms.macos-arm64"]
-checksum = "sha256:270d54e6a6caf83ed2af6c98f25cf965b0115ebf7fe8299830ad4597d1a249a8"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Darwin_arm64.tar.gz"
+checksum = "sha256:9b42a7f9ad8a044fc5b2e73d1488047b122056a59321a538373c7b418c7a5254"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Darwin_arm64.tar.gz"
 provenance = "cosign"
 
 [tools.nfpm."platforms.macos-x64"]
-checksum = "sha256:cad209787c164de05a009c022b6903aad78ee57a53d97bcb84e875b1745fa5a3"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Darwin_x86_64.tar.gz"
+checksum = "sha256:c95450b112d13c66fc648e677c8e4858a5aa8a9c14162c4f4441605c1f64baf0"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Darwin_x86_64.tar.gz"
 provenance = "cosign"
 
 [tools.nfpm."platforms.windows-x64"]
-checksum = "sha256:c58d4b24e0084e6d7e3ebbad1232c525d1a1134725b58f554eedb36ea2e67620"
-url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.0/nfpm_2.46.0_Windows_x86_64.zip"
+checksum = "sha256:1b870021e656847aec8fc7ff51bcacf1ab8a1e3cad722994fb30d4e3c7f3f0a7"
+url = "https://github.com/goreleaser/nfpm/releases/download/v2.46.1/nfpm_2.46.1_Windows_x86_64.zip"
 provenance = "cosign"
 
 [[tools."pipx:hatchling"]]
 version = "1.29.0"
 backend = "pipx:hatchling"
 
+[[tools.pkl]]
+version = "0.31.1"
+backend = "aqua:apple/pkl"
+
+[tools.pkl."platforms.linux-arm64"]
+checksum = "sha256:7ef10e743daa921fb94ae7bdb9ec6986f362bf250c55814b9ea2aeb13f2d083e"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-linux-aarch64"
+
+[tools.pkl."platforms.linux-arm64-musl"]
+checksum = "sha256:7ef10e743daa921fb94ae7bdb9ec6986f362bf250c55814b9ea2aeb13f2d083e"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-linux-aarch64"
+
+[tools.pkl."platforms.linux-x64"]
+checksum = "sha256:618f13955d755cafbfe8c9cba1d27635848cd49dbc6abffd398d2751db1231bf"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-linux-amd64"
+
+[tools.pkl."platforms.linux-x64-musl"]
+checksum = "sha256:618f13955d755cafbfe8c9cba1d27635848cd49dbc6abffd398d2751db1231bf"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-linux-amd64"
+
+[tools.pkl."platforms.macos-arm64"]
+checksum = "sha256:1b6a5438d9624cd2798a7530721bbbfa27ef72efe5c878a1b6c546c6e7ca0e8f"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-macos-aarch64"
+
+[tools.pkl."platforms.macos-x64"]
+checksum = "sha256:22123ed4ae4c03afa8c54c69f77f0bec39b0fa0f67b09d6d148e0a376a2a471d"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-macos-amd64"
+
+[tools.pkl."platforms.windows-x64"]
+checksum = "sha256:a8834481667325b44c539dbb758d7365a16389070f343c04b639bbe525ede013"
+url = "https://github.com/apple/pkl/releases/download/0.31.1/pkl-windows-amd64.exe"
+
 [[tools.python]]
 version = "3.14.4"
 backend = "core:python"
 
 [tools.python."platforms.linux-arm64"]
-checksum = "sha256:c84d61ae07e3b255f8bac6a28147bd373c3c1862d1d5598a9543a5b103fcb595"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:b8b597fdb2f8dccdc502c11947b60a4b65eb6bce79cfa60c7ccf9b6e8352c60a"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
 
 [tools.python."platforms.linux-arm64-musl"]
-checksum = "sha256:c84d61ae07e3b255f8bac6a28147bd373c3c1862d1d5598a9543a5b103fcb595"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:b8b597fdb2f8dccdc502c11947b60a4b65eb6bce79cfa60c7ccf9b6e8352c60a"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
 
 [tools.python."platforms.linux-x64"]
-checksum = "sha256:afbbab0107da1835089ed3bec8e11c742bde064d568729cd64856b0823b42217"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-x86_64_v3-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:1510571c0bf54c17985e2cfbf38d6f2aa6b04b77bd4993e9fb2dba87a37b0597"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-x86_64_v3-unknown-linux-gnu-install_only_stripped.tar.gz"
 
 [tools.python."platforms.linux-x64-musl"]
-checksum = "sha256:c838ac128a6e9c944b30301880472349eca8cd1abc79fb0d359ac2a358569389"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:fe9a9c32d13870af632cbac3dfc7528ae53597e94472aa4c7d6a42e8166136cd"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 
 [tools.python."platforms.macos-arm64"]
-checksum = "sha256:f1ce5d79bceecbed25a37b611d6dae147b27857dda8181e3a5e29e73dd1c57c3"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-aarch64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:6f304f4ec30854611f23316578302235fb517cd970519ecdd11a8c4db87fd843"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-aarch64-apple-darwin-install_only_stripped.tar.gz"
 
 [tools.python."platforms.macos-x64"]
-checksum = "sha256:1c9615f872058332b74b2be1b248078c636b6f4b116eed3e17f50eb7efe1a989"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-x86_64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:d51250a32fa5d9f0799c7bcb71720c27b10a3afd4a7de288120f96085d508a5a"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-x86_64-apple-darwin-install_only_stripped.tar.gz"
 
 [tools.python."platforms.windows-x64"]
-checksum = "sha256:472f4f0d91429661db1b28a72e36adc593b6bd5d19db222d7faca635b3005313"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260408/cpython-3.14.4+20260408-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+checksum = "sha256:a976991dcd085c1bb5d9a8084823a6bc8b7f9b079d8c432574a6ddd68c3a6fe1"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260414/cpython-3.14.4+20260414-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+
+[[tools.ruff]]
+version = "0.15.11"
+backend = "aqua:astral-sh/ruff"
+
+[tools.ruff."platforms.linux-arm64"]
+checksum = "sha256:4d196496a51d4bbefc4a2a65049364c920b470afd320befa20516e59d1c065e2"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-aarch64-unknown-linux-musl.tar.gz"
+
+[tools.ruff."platforms.linux-arm64-musl"]
+checksum = "sha256:4d196496a51d4bbefc4a2a65049364c920b470afd320befa20516e59d1c065e2"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-aarch64-unknown-linux-musl.tar.gz"
+
+[tools.ruff."platforms.linux-x64"]
+checksum = "sha256:ea286f17b66054a3aac2672158b9ac194030d89043ff108357edd9b20123219a"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-x86_64-unknown-linux-musl.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruff."platforms.linux-x64-musl"]
+checksum = "sha256:ea286f17b66054a3aac2672158b9ac194030d89043ff108357edd9b20123219a"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.ruff."platforms.macos-arm64"]
+checksum = "sha256:89cd4370b5c5d7ab01f436bd5d878293c9858e4e964a3da3013c49549198dc8b"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-aarch64-apple-darwin.tar.gz"
+
+[tools.ruff."platforms.macos-x64"]
+checksum = "sha256:c6f2c36fc5f3d14ffc2db1e205aa69756de485771f39848afe848c16b8a1a648"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-x86_64-apple-darwin.tar.gz"
+
+[tools.ruff."platforms.windows-x64"]
+checksum = "sha256:d1f76eac07c279aafc594d9ba4c6f658f7cb433002aeeadbe2959229fc368881"
+url = "https://github.com/astral-sh/ruff/releases/download/0.15.11/ruff-x86_64-pc-windows-msvc.zip"
+
+[[tools.typos]]
+version = "1.45.1"
+backend = "aqua:crate-ci/typos"
+
+[tools.typos."platforms.linux-arm64"]
+checksum = "sha256:0d3688c607a49ffb6dedaca6de44e4217abeaa5b93228d673dc5caf76f60489f"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-aarch64-unknown-linux-musl.tar.gz"
+
+[tools.typos."platforms.linux-arm64-musl"]
+checksum = "sha256:0d3688c607a49ffb6dedaca6de44e4217abeaa5b93228d673dc5caf76f60489f"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-aarch64-unknown-linux-musl.tar.gz"
+
+[tools.typos."platforms.linux-x64"]
+checksum = "sha256:33447531a0eff29796d6fb9b555b4628723db72c6bad129e168d97ac86ceb0f1"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.typos."platforms.linux-x64-musl"]
+checksum = "sha256:33447531a0eff29796d6fb9b555b4628723db72c6bad129e168d97ac86ceb0f1"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools.typos."platforms.macos-arm64"]
+checksum = "sha256:2c31ed16286f26c08ae477faf001af8542ff23aeb6e7323be5f620710c192fb5"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-aarch64-apple-darwin.tar.gz"
+
+[tools.typos."platforms.macos-x64"]
+checksum = "sha256:70767b5d8d920cbb17b452a6b068e36e1b3fd649089bce883d3512eb85990326"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-x86_64-apple-darwin.tar.gz"
+
+[tools.typos."platforms.windows-x64"]
+checksum = "sha256:a4ae081cb7a403f2b75e8c066aa4a4484207547c4e9eb2b4df3f68ecdbc5dd3e"
+url = "https://github.com/crate-ci/typos/releases/download/v1.45.1/typos-v1.45.1-x86_64-pc-windows-msvc.zip"

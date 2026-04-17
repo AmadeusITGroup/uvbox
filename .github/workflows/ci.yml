@@ -39,7 +39,10 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@v3
 
-      - name: Run CI
+      - name: Run linters
+        run: mise run lint
+
+      - name: Run tests
         run: mise run ci
 
   e2e:

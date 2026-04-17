@@ -8,6 +8,13 @@ goreleaser = "latest"
 nfpm = "latest"
 "pipx:hatchling" = "latest"
 "github:CycloneDX/cyclonedx-gomod" = "latest"
+ruff = "latest"
+typos = "latest"
+hk = { version = "1.43.0", os = ["linux", "macos/arm64", "windows"] }
+pkl = "latest"
+
+[env]
+HK_JOBS = "1"
 
 [tasks.format]
 description = "Format all Go code"
@@ -71,9 +78,18 @@ depends = ["fmt-check:boxer", "lint:boxer", "test:boxer"]
 description = "Run all CI checks for box"
 depends = ["fmt-check:box", "lint:box", "test:box"]
 
+[tasks.lint]
+description = "Run linters with hk"
+run = "hk check --all"
+depends = ["generate:*"]
+
 [tasks.ci]
 description = "Run all CI checks"
-depends = ["ci:boxer", "ci:box"]
+run = [
+  { task = "ci:boxer" },
+  { task = "ci:box" },
+]
+depends = ["generate:*"]
 
 [tasks.e2e]
 description = "Run end-to-end tests (build, cross-compile, run)"

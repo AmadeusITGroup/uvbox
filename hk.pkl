@@ -1,5 +1,5 @@
-amends "package://github.com/jdx/hk/releases/download/v1.42.0/hk@1.42.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.42.0/hk@1.42.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.43.0/hk@1.43.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.43.0/hk@1.43.0#/Builtins.pkl"
 
 default_branch = "main"
 exclude = List(
@@ -49,9 +49,7 @@ local python_linters = new Mapping<String, Step> {
 // ---------------------------------------------------------------------------
 // CI / infrastructure linters
 // ---------------------------------------------------------------------------
-local infra_linters = new Mapping<String, Step> {
-  ["actionlint"] = Builtins.actionlint
-}
+local infra_linters = new Mapping<String, Step> {}
 
 // ---------------------------------------------------------------------------
 // Generic quality checks (hk built-in utilities, no external tools)
@@ -63,16 +61,21 @@ local quality_checks = new Mapping<String, Step> {
   ["check-added-large-files"] = Builtins.check_added_large_files
   ["detect-private-key"] = Builtins.detect_private_key
   ["check-case-conflict"] = Builtins.check_case_conflict
-  ["typos"] = Builtins.typos
+  ["typos"] {
+    glob = "**/*"
+    check = "typos --force-exclude {{ files }}"
+    fix = "typos --force-exclude --write-changes {{ files }}"
+  }
 }
 
 // All linters combined (without commit-specific checks)
-local all_linters: Mapping<String, Step> =
-  go_formatters
-  + go_linters
-  + python_linters
-  + infra_linters
-  + quality_checks
+local all_linters = new Mapping<String, Step> {
+  ...go_formatters
+  ...go_linters
+  ...python_linters
+  ...infra_linters
+  ...quality_checks
+}
 
 // ---------------------------------------------------------------------------
 // Hooks
