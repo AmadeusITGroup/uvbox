@@ -92,9 +92,17 @@ run = [
 ]
 depends = ["generate:*"]
 
+[tasks."e2e:pypi"]
+description = "Run end-to-end tests for the pypi install path (full cross-compile matrix)"
+run = "python scripts/e2e.py pypi"
+
+[tasks."e2e:wheel"]
+description = "Run end-to-end tests for the wheel install path (native target only)"
+run = "python scripts/e2e.py wheel"
+
 [tasks.e2e]
-description = "Run end-to-end tests (build, cross-compile, run)"
-run = "python scripts/e2e.py"
+description = "Run all end-to-end tests (pypi + wheel)"
+run = "python scripts/e2e.py all"
 
 [settings]
 jobs = 1

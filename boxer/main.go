@@ -325,6 +325,33 @@ func goGenerate(repository, platform, arch string) error {
 	return nil
 }
 
+// buildGoflagsEnv returns the GOFLAGS environment entry for `go build`.
+//
+// The -ldflags=... entry is wrapped in single quotes so Go's GOFLAGS parser
+// (cmd/internal/quoted.Split) keeps the whole ldflags expression as a single
+// token. Without quoting, any ldflags string containing spaces — e.g.
+// "-s -w -X main.INSTALL_WHEELS=yes" — is split on whitespace and the bare
+// "-X" token is rejected as an unknown top-level flag with:
+//
+//	go: parsing $GOFLAGS: unknown flag -X
+//
+// The wheel build path broke silently on that exact shape when f19680f
+// (PR #14) routed ldflags through GOFLAGS for Windows+uv/uvx compatibility.
+//
+// The quotes are part of the env-var value. No shell interprets them; Go's
+// parser strips the wrapping quotes at init. The Windows fix from #14 is
+// preserved — env-var transport was never the problem, CLI arg escaping was.
+//
+// Returns an error if ldflags contains a single quote, preventing future
+// callers from silently smuggling in values that would break the wrapping.
+// Current callers produce only hardcoded tokens, so this is a safety net.
+func buildGoflagsEnv(ldflags string) (string, error) {
+	if strings.ContainsRune(ldflags, '\'') {
+		return "", fmt.Errorf("ldflags value must not contain single quotes: %q", ldflags)
+	}
+	return fmt.Sprintf("GOFLAGS='-ldflags=%s'", ldflags), nil
+}
+
 func goBuild(repository, buildName, platform, arch string) error {
 	var outbuf, errbuf strings.Builder
 
@@ -332,6 +359,15 @@ func goBuild(repository, buildName, platform, arch string) error {
 	ldflags := "-s -w"
 	if len(WheelsToEmbed) > 0 {
 		ldflags += " -X main.INSTALL_WHEELS=yes"
+	}
+
+	// Use $GOFLAGS instead of CLI args because Windows fails to escape ldflags
+	// correctly when uvbox is ran through uv/uvx (?!). See issue #7.
+	// The value is single-quoted so Go's GOFLAGS parser keeps it as one token
+	// even when it contains -X flags. See buildGoflagsEnv for details.
+	goflagsEnv, err := buildGoflagsEnv(ldflags)
+	if err != nil {
+		return fmt.Errorf("failed to build GOFLAGS env: %w", err)
 	}
 
 	// Command
@@ -342,9 +378,7 @@ func goBuild(repository, buildName, platform, arch string) error {
 		fmt.Sprintf("GOOS=%s", platform),
 		fmt.Sprintf("GOARCH=%s", arch),
 		"CGO_ENABLED=0",
-		// Use $GOFLAGS instead of CLI args because Windows fails to escape ldflags correctly when uvbox is ran through uv/uvx (?!)
-		// See https://github.com/AmadeusITGroup/uvbox/issues/7
-		fmt.Sprintf("GOFLAGS=-ldflags=%s", ldflags),
+		goflagsEnv,
 	)
 	cmd.Stdout = &outbuf
 	cmd.Stderr = &errbuf
