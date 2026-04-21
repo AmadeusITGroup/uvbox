@@ -59,6 +59,22 @@ func runHiddenCliAndExitIfCalled(b *Box, packageVersion, packageConstraintsUrl s
 		},
 	}
 
+	var installCmd = &cobra.Command{
+		Use:   "install",
+		Short: "Ensure the package is installed with the latest version",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			if yes, err := b.NeedsInstall(); err != nil {
+				logger.Fatal("Failed to check if box needs install", logger.Args("error", err))
+			} else if yes {
+				logger.Trace("Installing box")
+				if err := b.InstallWithSpinner(); err != nil {
+					logger.Fatal("Failed to install box", logger.Args("error", err))
+				}
+			}
+		},
+	}
+
 	var updateCmd = &cobra.Command{
 		Use:   "update",
 		Short: "Update the package to the latest available version",
@@ -114,10 +130,11 @@ func runHiddenCliAndExitIfCalled(b *Box, packageVersion, packageConstraintsUrl s
 	}
 
 	cacheCmd.AddCommand(cleanCacheCmd)
+	selfCmd.AddCommand(installCmd)
+	selfCmd.AddCommand(updateCmd)
+	selfCmd.AddCommand(removeCmd)
 	selfCmd.AddCommand(cacheCmd)
 	selfCmd.AddCommand(pathCmd)
-	selfCmd.AddCommand(removeCmd)
-	selfCmd.AddCommand(updateCmd)
 	selfCmd.AddCommand(uvCmd)
 	rootCmd.AddCommand(selfCmd)
 
