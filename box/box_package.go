@@ -156,11 +156,47 @@ func (b *Box) InstalledPackagePath() (string, error) {
 	return installedPackage.Path, nil
 }
 
+// installMethod identifies which install backend uvToolInstall should use.
+type installMethod int
+
+const (
+	installMethodPypi installMethod = iota
+	installMethodWheels
+	installMethodGit
+)
+
+// selectInstallMethod is the pure-function core of the uvToolInstall dispatch.
+// It returns an error when the build-time configuration is inconsistent —
+// specifically when both GIT_SOURCE and INSTALL_WHEELS are set, which would
+// otherwise silently favor one source and discard the other.
+func selectInstallMethod(gitSource, installWheels string) (installMethod, error) {
+	gitSet := gitSource != ""
+	wheelsSet := installWheels == "yes"
+	if gitSet && wheelsSet {
+		return 0, fmt.Errorf("invalid binary: both GIT_SOURCE and INSTALL_WHEELS are set; this indicates a build-time bug, please rebuild")
+	}
+	switch {
+	case gitSet:
+		return installMethodGit, nil
+	case wheelsSet:
+		return installMethodWheels, nil
+	default:
+		return installMethodPypi, nil
+	}
+}
+
 func (b *Box) uvToolInstall(packageVersion, constraintsFile string) error {
-	if INSTALL_WHEELS == "no" {
-		return b.uvToolInstallPypi(packageVersion, constraintsFile)
-	} else {
+	method, err := selectInstallMethod(GIT_SOURCE, INSTALL_WHEELS)
+	if err != nil {
+		return err
+	}
+	switch method {
+	case installMethodGit:
+		return b.uvToolInstallGit(packageVersion, constraintsFile)
+	case installMethodWheels:
 		return b.uvToolInstallWheels(constraintsFile)
+	default:
+		return b.uvToolInstallPypi(packageVersion, constraintsFile)
 	}
 }
 
@@ -210,6 +246,7 @@ func (b *Box) uvToolInstallPypi(packageVersion, constraintsFile string) error {
 		"name":            b.PackageName,
 		"version":         packageVersion,
 		"constraintsFile": constraintsFile,
+		"method":          "pypi",
 	}
 	logger.Debug("Installing package", logger.ArgsFromMap(debugArgsMap))
 

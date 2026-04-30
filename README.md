@@ -37,7 +37,7 @@
 
 ## Features
 
-- **Package from PyPI or Wheels** — Install your application from package indexes or choose to bundle local wheel files
+- **Package from PyPI, Wheels, or Git** — Install your application from package indexes, bundle local wheel files, or fetch from a git repository
 - **True Cross-Compilation** — Build binaries for Linux, macOS, and Windows (AMD64/ARM64) from any platform in seconds
 - **Auto-Updates** — Built-in version checking and self-update/fallback capabilities for your binaries
 - **Dependency Freezing** — Use constraints files to ensure reproducible installations
@@ -85,6 +85,12 @@ pip install uvbox
 
 ### Basic Usage
 
+uvbox supports three source types, each via its own subcommand:
+
+- **`uvbox pypi`** — install the package from a package index (PyPI by default)
+- **`uvbox wheel`** — bundle one or more local wheel files into the binary
+- **`uvbox git`** — fetch the package from a git repository at runtime
+
 Create a simple configuration and build:
 
 ```bash
@@ -115,6 +121,49 @@ Package local wheel files instead of installing from PyPI:
 ```bash
 uvbox wheel --config uvbox.toml ./my-app.whl
 ```
+
+### Build from a Git Repository
+
+Package an application from a git repository that isn't published to PyPI.
+The examples below use [`VaasuDevanS/cowsay-python`](https://github.com/VaasuDevanS/cowsay-python)
+so they're copy-paste runnable — pair them with [`examples/git/simple-app.toml`](./examples/git/simple-app.toml):
+
+```bash
+# Default branch
+uvbox git git+https://github.com/VaasuDevanS/cowsay-python --config examples/git/simple-app.toml
+
+# Specific tag
+uvbox git git+https://github.com/VaasuDevanS/cowsay-python@v6.1
+
+# Specific branch
+uvbox git git+https://github.com/VaasuDevanS/cowsay-python@main
+
+# Specific commit
+uvbox git git+https://github.com/VaasuDevanS/cowsay-python@abc123
+
+# SSH (uses your local git credentials)
+uvbox git git+ssh://git@github.com/org/private-repo
+```
+
+The git spec is passed through to `uv tool install --from` verbatim at runtime
+on the end-user's machine. `uvbox` itself never clones the repository at build
+time — the clone happens on first run of the generated binary. This means you
+can build binaries for a private repo without providing credentials to the
+build machine; the end user's local git/ssh setup handles authentication.
+
+**Behavior of `[package.version]` for git builds:**
+- `static` and `dynamic` are ignored for install resolution — the git ref in
+  the spec is the source of truth. `uvToolInstallGit` logs a warning and
+  drops any supplied version. Leave both unset when tracking a moving branch.
+- With `auto-update = true` and neither `static` nor `dynamic` set, the
+  runtime version check has no target to compare against and falls through
+  to re-running `uv tool install --from <spec> --upgrade` on every
+  invocation, giving you the "fresh dependencies every run" behavior
+  equivalent to `pycrucible`'s `delete_after_run = true`.
+- Setting `static = "x.y.z"` or a `dynamic` URL that happens to resolve to
+  the currently installed version will **disable** the always-update
+  behavior — the outer version compare matches and skips the update path
+  before `uvToolInstallGit` ever runs.
 
 ## Configuration
 
@@ -200,8 +249,12 @@ environment = [
 #### `[package]`
 Core package configuration.
 
-- **`name`** (required) — Package name to install from PyPI
-- **`script`** (required) — Entry point script to run (from `[project.scripts]` in your package)
+- **`name`** (required) — Distribution name the package registers (what
+  `uv tool list` reports after install). Used for all source types
+  (`pypi`, `wheel`, `git`) — for `git` it must match the name declared in
+  the repo's `pyproject.toml`, not the repo/org slug.
+- **`script`** (required) — Entry point to run. Must match an entry from
+  the package's `[project.scripts]`. Applies to all source types.
 
 #### `[package.version]`
 Version management and updates.
@@ -372,10 +425,11 @@ auto-update = true
 
 See the [`examples/`](./examples) directory for complete working examples:
 
-- [`simple-app.toml`](./examples/pypi/simple-app.toml) — Minimal PyPI package
-- [`custom-registry.toml`](./examples/pypi/custom-registry.toml) — Custom registry and mirrors
-- [`custom-certs.toml`](./examples/pypi/custom-certs.toml) — Corporate CA bundle
-- [`optional-dependency.toml`](./examples/pypi/optional-dependency.toml) - Install a package with an optional dependency
+- [`git/simple-app.toml`](./examples/git/simple-app.toml) — Minimal Python package from a Git repository
+- [`pypi/simple-app.toml`](./examples/pypi/simple-app.toml) — Minimal Python package from PyPI
+- [`pypi/custom-registry.toml`](./examples/pypi/custom-registry.toml) — Custom registry and mirrors
+- [`pypi/custom-certs.toml`](./examples/pypi/custom-certs.toml) — Corporate CA bundle
+- [`pypi/optional-dependency.toml`](./examples/pypi/optional-dependency.toml) — Install a package with an optional dependency
 
 ## Requirements
 
@@ -387,6 +441,9 @@ See the [`examples/`](./examples) directory for complete working examples:
 ### Runtime (Generated Binaries)
 
 - **libc** (standard C library, required by Python itself)
+- **git** (only for binaries built with `uvbox git` — `uv` shells out to the
+  system `git` on first run to clone the repository. For `ssh://` specs, the
+  end user's local SSH keys/agent are used for authentication.)
 
 ## License
 

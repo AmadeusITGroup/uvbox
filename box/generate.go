@@ -12,6 +12,7 @@ var CONFIGURATION_FILENAME = "uvbox.toml"
 var CERTIFICATES_BUNDLE_FILENAME = "ca-bundle.crt"
 var WHEELS_FOLDER = "wheels"
 var WHEELS_PLACEHOLDER = filepath.Join(WHEELS_FOLDER, "placeholder")
+var GIT_SOURCE_FILENAME = "git_source.txt"
 
 func deleteIfExists(filename string) {
 	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
@@ -50,4 +51,8 @@ func main() {
 
 	// Generate wheels folder placeholder
 	generateEmptyFileIfMissing(WHEELS_PLACEHOLDER)
+
+	// Generate empty git_source.txt placeholder (populated at uvbox-build
+	// time by boxer's writeGitSourceFile when `uvbox git <spec>` is used).
+	generateEmptyFileIfMissing(GIT_SOURCE_FILENAME)
 }

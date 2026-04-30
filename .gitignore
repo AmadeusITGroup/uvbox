@@ -5,6 +5,7 @@
 
 box/uvbox.toml
 box/wheels
+box/git_source.txt
 
 boxer/boxes
 boxer/boxer
